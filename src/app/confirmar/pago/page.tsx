@@ -63,8 +63,8 @@ export default function Confirmado() {
 							<div className="-space-x-3 flex *:ring *:ring-white">
 								<Avatar>
 									<AvatarImage
-										src={userAuth?.photoURL}
-										alt={userAuth?.displayName}
+										src={userAuth?.photoURL ?? '/favicon.ico'}
+										alt={userAuth?.displayName ?? 'KA'}
 									/>
 									<AvatarFallback>
 										{userAuth?.displayName
@@ -75,8 +75,8 @@ export default function Confirmado() {
 								</Avatar>
 								<Avatar>
 									<AvatarImage
-										src={userAuth?.photoURL}
-										alt={userAuth?.displayName}
+										src={userAuth?.photoURL ?? '/favicon.ico'}
+										alt={userAuth?.displayName ?? 'KA'}
 									/>
 									<AvatarFallback>
 										{userAuth?.displayName
@@ -87,8 +87,8 @@ export default function Confirmado() {
 								</Avatar>
 								<Avatar>
 									<AvatarImage
-										src={userAuth?.photoURL}
-										alt={userAuth?.displayName}
+										src={userAuth?.photoURL ?? '/favicon.ico'}
+										alt={userAuth?.displayName ?? 'KA'}
 									/>
 									<AvatarFallback>
 										{userAuth?.displayName
@@ -99,8 +99,8 @@ export default function Confirmado() {
 								</Avatar>
 								<Avatar>
 									<AvatarImage
-										src={userAuth?.photoURL}
-										alt={userAuth?.displayName}
+										src={userAuth?.photoURL ?? '/favicon.ico'}
+										alt={userAuth?.displayName ?? 'KA'}
 									/>
 									<AvatarFallback>
 										{userAuth?.displayName
