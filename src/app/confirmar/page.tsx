@@ -32,6 +32,9 @@ function confirmarPresenca() {
 		presenca: true,
 		confirmado_em: Date.now(),
 		pago: false,
+		avatar: userAuth?.photoURL,
+		display_name: userAuth?.displayName,
+		user_id: userAuth?.uid,
 	})
 	.then(() => {
 		toast.success("Presença confirmada com sucesso.")

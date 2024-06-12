@@ -12,7 +12,10 @@ export default function Confirmados() {
   const [confirmados, setConfirmados] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  
   const router = useRouter();
+
+
 
   useEffect(() => {
     const auth = getAuth();

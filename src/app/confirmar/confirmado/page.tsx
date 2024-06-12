@@ -10,21 +10,43 @@ import { useRouter } from 'next/navigation'
 import { PiSignOutBold } from 'react-icons/pi'
 import { toast } from 'sonner'
 import {FaPix} from 'react-icons/fa6'
+import { get, ref } from 'firebase/database'
+import { database } from '@/lib/firebaseService'
 
 export default function Confirmado() {
 	const { userAuth, logout } = userAuthContext()
 	const route = useRouter()
 
-	function copyToClipboard() {
+	if (!userAuth) {
+		route.push('/')
+		return null // Retornar null para evitar renderização de conteúdo enquanto redireciona
+	}
+
+	const copyToClipboard = () => {
 		navigator.clipboard.writeText(
 			'00020126550014br.gov.bcb.pix0122karolharummy@gmail.com0207KArraia5204000053039865802BR5925KAROLINE HARUMMY ROMERO M6012CAMPO MOURAO62290525Prp9SQnmN2zFCwtxEI8jvKsbi630482D1',
 		)
 		toast.success('Código copiado para a área de transferência')
 	}
 
-	if (!userAuth) {
-		return route.push('/')
+	const verificarPagamento = () => {
+		get(ref(database, `confirmados/${userAuth?.uid}`))
+			.then((snapshot) => {
+				if (snapshot.exists()) {
+					const { pago } = snapshot.val();
+					if (pago) {
+						route.push('/confirmar/pago');
+					}
+				} else {
+					console.log("No data available");
+				}
+			})
+			.catch((error) => {
+				console.error(error);
+			})
 	}
+
+	verificarPagamento(); 
 
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4">
@@ -39,8 +61,7 @@ export default function Confirmado() {
 						<p>O pagamento esta pendente</p>
 						<Image src="/pix.jpg" height={300} width={300} alt="QRCode PIX" />
 
-						<Button onClick={() => copyToClipboard()}>
-							
+						<Button onClick={copyToClipboard}>
 							Copiar código do <FaPix className='ml-1.5 mr-1' /> PIX
 						</Button>
 					</div>
