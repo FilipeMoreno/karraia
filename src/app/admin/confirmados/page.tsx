@@ -1,6 +1,6 @@
 'use client'
 
-import { sendMail } from '@/actions/sendMail'
+import { sendMailConfirmacao, sendMailPagamento } from '@/actions/sendMail'
 import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
 import { Badge } from '@/components/ui/badge'
@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/table'
 import { database } from '@/lib/firebaseService'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { get, ref, update } from 'firebase/database'
+import { get, ref, remove, update } from 'firebase/database'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -91,8 +91,17 @@ export default function Confirmados() {
 			pagamento_confirmado_em: Date.now(),
 		})
 			.then(() => {
-				toast.success('Pagamento confirmado com sucesso!')
-				sendMail(email)
+				sendMailConfirmacao(email)
+					.then(() => {
+						toast.success('Pagamento confirmado com sucesso!', {
+							description: 'E-mail de confirmação enviado',
+						})
+					})
+					.catch((err) => {
+						toast.error('Erro ao enviar e-mail de confirmação', {
+							description: err.message,
+						})
+					})
 			})
 			.catch((error: Error) => {
 				toast.error('Erro ao confirmar pagamento', {
@@ -119,10 +128,7 @@ export default function Confirmados() {
 
 	function cancelarPresenca(id: string) {
 		const userRef = ref(database, `confirmados/${id}`)
-		update(userRef, {
-			presenca: false,
-			presenca_confirmada_em: null,
-		})
+		remove(userRef)
 			.then(() => {
 				toast.success('Presença cancelada com sucesso!')
 			})
@@ -139,6 +145,66 @@ export default function Confirmados() {
 
 	function getTotalPagos() {
 		return confirmados.filter((confirmado) => confirmado?.pago).length
+	}
+
+	function reenviarEmail(id: string, email: string, type: string) {
+		const userRef = ref(database, `confirmados/${id}`)
+		if (type === 'confirmacao') {
+			get(userRef)
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						const data = snapshot.val()
+						if (!data.pago) {
+							toast.error(
+								'E-mail não pode ser reenviado, pagamento não confirmado',
+							)
+						} else {
+							sendMailConfirmacao(email)
+								.then(() => {
+									toast.success('E-mail reenviado com sucesso!')
+								})
+								.catch((error: Error) => {
+									toast.error('Erro ao reenviar e-mail', {
+										description: error.message,
+									})
+								})
+						}
+					}
+				})
+				.catch((error: Error) => {
+					toast.error('Erro ao buscar dados do usuário', {
+						description: error.message,
+					})
+				})
+		}
+		if (type === 'pagamento') {
+			get(userRef)
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						const data = snapshot.val()
+						if (data.pago) {
+							toast.error(
+								'E-mail não pode ser reenviado, pagamento já confirmado',
+							)
+						} else {
+							sendMailPagamento(email)
+								.then(() => {
+									toast.success('E-mail reenviado com sucesso!')
+								})
+								.catch((error: Error) => {
+									toast.error('Erro ao reenviar e-mail', {
+										description: error.message,
+									})
+								})
+						}
+					}
+				})
+				.catch((error: Error) => {
+					toast.error('Erro ao buscar dados do usuário', {
+						description: error.message,
+					})
+				})
+		}
 	}
 
 	if (loading) {
@@ -177,6 +243,7 @@ export default function Confirmados() {
 							<TableHead>Data de confirmação</TableHead>
 							<TableHead>Pago</TableHead>
 							<TableHead>Pagamento confirmado</TableHead>
+							<TableHead>Acompanhante de</TableHead>
 							<TableHead>Ações</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -218,20 +285,60 @@ export default function Confirmados() {
 											}).format(new Date(confirmado.pagamento_confirmado_em))
 										: 'Não pago'}
 								</TableCell>
+								<TableCell>{confirmado?.acompanhante || 'Ninguém'}</TableCell>
 								<TableCell>
 									<Menubar>
 										<MenubarMenu>
 											<MenubarTrigger>Ações</MenubarTrigger>
 											<MenubarContent>
 												{confirmado?.pago && (
-													<MenubarItem>Cancelar pagamento</MenubarItem>
+													<MenubarItem
+														onClick={() => cancelarPagamento(confirmado?.id)}
+													>
+														Cancelar pagamento
+													</MenubarItem>
 												)}
 												{!confirmado?.pago && (
-													<MenubarItem>Confirmar pagamento</MenubarItem>
+													<MenubarItem
+														onClick={() =>
+															confirmarPagamento(
+																confirmado?.id,
+																confirmado?.email,
+															)
+														}
+													>
+														Confirmar pagamento
+													</MenubarItem>
 												)}
 												{confirmado?.presenca && (
-													<MenubarItem>Cancelar presença</MenubarItem>
+													<MenubarItem
+														onClick={() => cancelarPresenca(confirmado?.id)}
+													>
+														Cancelar presença
+													</MenubarItem>
 												)}
+												<MenubarItem
+													onClick={() =>
+														reenviarEmail(
+															confirmado?.id,
+															confirmado?.email,
+															'confirmacao',
+														)
+													}
+												>
+													Reenviar e-mail de confirmação
+												</MenubarItem>
+												<MenubarItem
+													onClick={() =>
+														reenviarEmail(
+															confirmado?.id,
+															confirmado?.email,
+															'pagamento',
+														)
+													}
+												>
+													Reenviar e-mail de pagamento
+												</MenubarItem>
 											</MenubarContent>
 										</MenubarMenu>
 									</Menubar>

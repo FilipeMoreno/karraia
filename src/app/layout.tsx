@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 		url: 'https://karraia.vercel.app',
 		images: 'https://i.imgur.com/uXOHKjv.png',
 		locale: 'pt-BR',
+		
 	},
 	twitter: {
 		card: 'summary_large_image',
