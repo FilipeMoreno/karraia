@@ -49,7 +49,7 @@ export default function DashboardAdmin() {
 	}
 
 	return (
-		<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj p-4 lg:p-24">
+		<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj p-4">
 			<LogoComponent />
 			<Card>
 				<CardHeader>

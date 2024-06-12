@@ -6,8 +6,8 @@ export default function LogoComponent() {
 			<Image
 				src="/logo.png"
 				alt="logo"
-				width={200}
-				height={200}
+				width={300}
+				height={300}
 				className="animate-duration-[5000ms] animate-infinite animate-wiggle"
 			/>
 		</div>

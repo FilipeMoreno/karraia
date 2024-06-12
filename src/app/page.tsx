@@ -12,9 +12,10 @@ import {
 import { userAuthContext } from '@/context/AuthContext'
 import { googleLogin } from '@/lib/authService'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { FaGoogle } from 'react-icons/fa'
+import { FaGoogle, FaHeart } from 'react-icons/fa'
 
 export default function Home() {
 	const { userAuth } = userAuthContext()
@@ -67,7 +68,7 @@ export default function Home() {
 
 	return (
 		<>
-			<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4 lg:p-24">
+			<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4">
 				<LogoComponent />
 				<Card className="w-full animate-delay-300 animate-fade-down lg:w-[600px]">
 					<CardHeader>
@@ -81,7 +82,8 @@ export default function Home() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-4">
-						<div className="rounded-lg bg-zinc-100 p-4 text-center">
+						<div className="w-full rounded-lg bg-zinc-100 p-12 text-center lg:p-4">
+							<p className="mb-4 font-bold font-caveat text-4xl">Faltam</p>
 							{isCountdownInitialized &&
 							time.days === 0 &&
 							time.hours === 0 &&
@@ -91,7 +93,7 @@ export default function Home() {
 									<h2 className="font-bold text-xl">O evento começou!</h2>
 								</div>
 							) : (
-								<div className="flex flex-row items-center justify-center gap-6 font-bold font-jura text-2xl">
+								<div className="flex flex-row items-center justify-center gap-2 font-bold font-jura text-xl lg:gap-4 lg:text-2xl">
 									{time.days > 0 && (
 										<span>
 											{time.days}
@@ -122,19 +124,31 @@ export default function Home() {
 							)}
 						</div>
 						<div className="rounded-lg bg-zinc-100 p-4">
-							<h1 className="text-center font-bold text-2xl">
+							<h1 className="mb-4 text-center font-bold font-caveat text-4xl">
 								Confirme sua presença!
 							</h1>
-							<p>
-								Faça login clicando no botão abaixo para confirmar sua presença.
+							<p className="text-center">Não vai ficar de fora, né?</p>
+							<p className="text-center">
+								Faça login com o Google clicando no botão abaixo para confirmar
+								sua presença.
 							</p>
 						</div>
 					</CardContent>
 
-					<CardFooter>
+					<CardFooter className="flex flex-col items-center">
 						<Button className="w-full" onClick={googleLogin}>
 							<FaGoogle className="mr-2" /> Entrar com Google
 						</Button>
+						<div className="-mb-4 mt-4 flex items-center justify-center gap-1 text-xs">
+							Development with <FaHeart className="text-red-500" /> by
+							<Link
+								href="https://github.com/filipemoreno"
+								target="_blank"
+								className="hover:text-[#c83e73] hover:underline"
+							>
+								Filipe Moreno
+							</Link>
+						</div>
 					</CardFooter>
 				</Card>
 			</main>
