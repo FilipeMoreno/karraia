@@ -83,44 +83,50 @@ export default function Home() {
 					</CardHeader>
 					<CardContent className="flex flex-col gap-4">
 						<div className="w-full rounded-lg bg-zinc-100 p-12 text-center lg:p-4">
-							<p className="mb-4 font-bold font-caveat text-4xl">Faltam</p>
-							{isCountdownInitialized &&
-							time.days === 0 &&
-							time.hours === 0 &&
-							time.minutes === 0 &&
-							time.seconds === 0 ? (
+							{isCountdownInitialized && time.days === 0 && time.hours < -24 ? (
+								<div className="mt-4 text-center">
+									<h2 className="font-bold text-xl">É hoje!</h2>
+								</div>
+							) : isCountdownInitialized &&
+								time.days === 0 &&
+								time.hours === 0 &&
+								time.minutes === 0 &&
+								time.seconds === 0 ? (
 								<div className="mt-4 text-center">
 									<h2 className="font-bold text-xl">O evento começou!</h2>
 								</div>
 							) : (
-								<div className="flex flex-row items-center justify-center gap-2 font-bold font-jura text-xl lg:gap-4 lg:text-2xl">
-									{time.days > 0 && (
+								<>
+									<p className="mb-4 font-bold font-caveat text-4xl">Faltam</p>
+									<div className="flex flex-row items-center justify-center gap-2 font-bold font-jura text-xl lg:gap-4 lg:text-2xl">
+										{time.days > 0 && (
+											<span>
+												{time.days}
+												<br />
+												<small>dias</small>
+											</span>
+										)}
+										{time.hours > 0 && (
+											<span>
+												{time.hours}
+												<br />
+												<small>horas</small>
+											</span>
+										)}
+										{time.minutes > 0 && (
+											<span>
+												{time.minutes}
+												<br />
+												<small>minutos</small>
+											</span>
+										)}
 										<span>
-											{time.days}
+											{time.seconds}
 											<br />
-											<small>dias</small>
+											<small>segundos</small>
 										</span>
-									)}
-									{time.hours > 0 && (
-										<span>
-											{time.hours}
-											<br />
-											<small>horas</small>
-										</span>
-									)}
-									{time.minutes > 0 && (
-										<span>
-											{time.minutes}
-											<br />
-											<small>minutos</small>
-										</span>
-									)}
-									<span>
-										{time.seconds}
-										<br />
-										<small>segundos</small>
-									</span>
-								</div>
+									</div>
+								</>
 							)}
 						</div>
 						<div className="rounded-lg bg-zinc-100 p-4">
