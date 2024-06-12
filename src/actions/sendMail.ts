@@ -68,7 +68,7 @@ const html = `
             <p>Sua presença e pagamento foram confirmados no KArraiá! 🥳</p>
             <p>Não esqueça as informações principais:</p>
             <p>📅 <strong>29/06/2024</strong></p>
-            <p>📍 <strong>Recanto Faviana</strong> (Avenida Alcebíades de Paula Neto, 31 - Jardom Oriental - Maringá/PR)</p>
+            <p>📍 <strong>Recanto Fabiana</strong> (Avenida Alcebíades de Paula Neto, 31 - Jardom Oriental - Maringá/PR)</p>
             <p>⏰ <strong>18h às 00h</strong></p>
             <p>Nos vemos lá! 😘</p>
         </div>
