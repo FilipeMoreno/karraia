@@ -75,6 +75,9 @@ const config = {
 			backgroundImage: {
 				fj: "url('/fj.png')",
 			},
+			backgroundRepeat: {
+				'no-repeat': 'no-repeat',
+			},
 			fontFamily: {
 				inter: ['var(--font-inter)'],
 				caveat: ['var(--font-caveat)'],

@@ -73,7 +73,7 @@ export default function Confirmado() {
 	}
 
 	return (
-		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4">
+		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj bg-no-repeat p-4">
 			<LogoComponent />
 			{!pago ? (
 				<Card className="w-full animate-delay-300 animate-fade-down lg:w-[600px]">

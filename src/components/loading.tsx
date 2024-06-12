@@ -21,7 +21,7 @@ export default function Loading() {
 	}, [])
 
 	return (
-		<div className="flex h-screen w-screen flex-col items-center justify-center bg-fj">
+		<div className="flex h-screen w-screen flex-col items-center justify-center bg-fj bg-no-repeat">
 			<ReactLoading type="bubbles" color="black" height={100} width={100} />
 			<h1 className="text-xl">{loadingText}</h1>
 		</div>

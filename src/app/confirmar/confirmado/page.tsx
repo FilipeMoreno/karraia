@@ -9,6 +9,7 @@ import { get, ref } from 'firebase/database'
 import { CheckCircle2Icon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { FaArrowRight } from 'react-icons/fa'
 import { FaPix } from 'react-icons/fa6'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
 import { toast } from 'sonner'
@@ -50,7 +51,7 @@ export default function Confirmado() {
 	verificarPagamento()
 
 	return (
-		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4">
+		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj bg-no-repeat p-4">
 			<LogoComponent />
 			<Card className="w-full animate-delay-300 animate-fade-down lg:w-[600px]">
 				<CardContent>
@@ -69,13 +70,28 @@ export default function Confirmado() {
 							Seu pagamento está pendente!
 							<PiSirenFill color="red" className="ml-2 h-5 w-5 animate-pulse" />
 						</p>
-						<p>Valor: R$25,00</p>
-						<Image src="/pix.jpg" height={300} width={300} alt="QRCode PIX" />
 
-						<Button onClick={copyToClipboard}>
-							Copiar código do <FaPix className="mr-1 ml-1.5" color="#38beb0" />
-							<b className="text-[#38beb0]">PIX</b>
-						</Button>
+						<div className="flex w-full flex-col items-center justify-center gap-4 rounded-lg border-2 border-[#38beb0]">
+							<p className="w-full bg-[#38beb0] text-center font-bold text-xl">
+								PIX
+							</p>
+							<p>
+								Valor: <b>R$25,00</b>
+							</p>
+							<div className="rounded-lg bg-zinc-100 p-4">
+								<Image
+									src="/pix.jpg"
+									height={300}
+									width={300}
+									alt="QRCode PIX"
+								/>
+							</div>
+
+							<Button onClick={copyToClipboard} className="mb-4 w-[60%]">
+								Copiar código <FaPix className="mr-1 ml-1.5" color="#38beb0" />
+								<b className="text-[#38beb0]">PIX</b>
+							</Button>
+						</div>
 					</div>
 				</CardContent>
 				<CardFooter className="flex flex-col gap-4">
@@ -83,7 +99,7 @@ export default function Confirmado() {
 						onClick={() => route.push('/confirmar/pago')}
 						className="w-full"
 					>
-						Já paguei
+						Já paguei <FaArrowRight className="mr-2" />
 					</Button>
 					<Button className="w-full" onClick={logout} variant={'destructive'}>
 						<PiSignOutBold className="mr-2" />

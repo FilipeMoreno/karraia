@@ -69,7 +69,7 @@ export default function AvatarConfirmados({ modelo }: { modelo: number }) {
 						)}
 					</div>
 					{modelo === 1 ? (
-						<p>confirmam presença!</p>
+						<p>já confirmam presença!</p>
 					) : (
 						<p>já confirmaram presença! Vai ficar de fora?</p>
 					)}

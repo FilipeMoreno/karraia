@@ -58,7 +58,7 @@ export default function RootLayout({
 			</head>
 			<body
 				// biome-ignore lint/nursery/useSortedClasses: <explanation>
-				className={`${inter.variable} ${caveat.variable} ${jura.variable}`}
+				className={`${inter.variable} ${caveat.variable} ${jura.variable} bg-[#fbe3cb]`}
 			>
 				<Providers>{children}</Providers>
 			</body>

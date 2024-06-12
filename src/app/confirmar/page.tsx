@@ -70,7 +70,7 @@ export default function Confirmar() {
 
 	return (
 		<>
-			<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj p-4">
+			<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj bg-no-repeat p-4">
 				<LogoComponent />
 				<Card className="w-full animate-delay-300 animate-fade-down lg:w-[600px]">
 					<CardHeader>
@@ -82,15 +82,20 @@ export default function Confirmar() {
 					</CardHeader>
 					<CardContent>
 						<div className="flex flex-col gap-4">
-							<div className="text-justify text-lg">
-								<p>Adoraria ter sua presença no meu aniversário! 🎈</p>
-								<b>Bora comemorar comigo? 🫣</b>
+							<div className="flex flex-col gap-2 text-justify text-lg">
+								<div>
+									<p>Adoraria ter sua presença no meu aniversário! 🎈</p>
+									<b>Bora comemorar comigo? 🫣</b>
+								</div>
+								<p className="rounded-lg bg-red-100 p-2 text-center">
+									É só clicar no botão abaixo e sua presença será confirmada!
+								</p>
 							</div>
 							<div>
 								<AvatarConfirmados modelo={2} />
 							</div>
 							<div className="flex flex-col gap-2">
-								<p>Acompanhante, informe o nome do convidado abaixo.</p>
+								<p>É acompanhante? Informe o nome do(a) convidado(a) abaixo.</p>
 								<Input
 									onChange={() => {
 										setAcompanhante(
@@ -100,7 +105,7 @@ export default function Confirmar() {
 									}}
 									type="text"
 									id="convidado"
-									placeholder="Nome"
+									placeholder="Nome do(a) convidado(a)"
 								/>
 							</div>
 						</div>
@@ -108,7 +113,7 @@ export default function Confirmar() {
 					<CardFooter className="flex flex-col gap-4">
 						<Button onClick={() => confirmarPresenca()} className="w-full">
 							<span className="mr-2 text-lg">🎉</span>
-							Confirmar minha presença
+							Quero confirmar minha presença!
 						</Button>
 						<Button onClick={logout} variant={'destructive'} className="w-full">
 							<PiSignOutBold className="mr-2" />
