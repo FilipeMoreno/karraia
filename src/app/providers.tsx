@@ -1,4 +1,5 @@
 import { AuthContextProvider } from '@/context/AuthProvider'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { ThemeProvider } from 'next-themes'
@@ -21,6 +22,7 @@ export default async function Providers({ children }: { children: ReactNode }) {
 				<Toaster richColors closeButton />
 				<SpeedInsights />
 				<Analytics />
+				<GoogleAnalytics gaId={`${process.env.GOOGLE_GA_ID}`} />
 			</ThemeProvider>
 		</AuthContextProvider>
 	)
