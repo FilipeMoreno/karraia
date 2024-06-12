@@ -115,7 +115,7 @@ const templatePagamento = `
         .logo {
             width: 200px;
             position: relative;
-            top: -35px;
+            top: -25px;
         }
         .content {
             padding: 20px;
@@ -145,17 +145,15 @@ const templatePagamento = `
             display: inline-block;
             margin: 10px 0;
         }
-    </style>
-    <script>
-        function copyToClipboard() {
-            const pixKey = '00020126550014br.gov.bcb.pix0122karolharummy@gmail.com0207KArraia5204000053039865802BR5925KAROLINE HARUMMY ROMERO M6012CAMPO MOURAO62290525Prp9SQnmN2zFCwtxEI8jvKsbi630482D1';
-            navigator.clipboard.writeText(pixKey).then(() => {
-                alert('Código PIX copiado!');
-            }, () => {
-                alert('Falha ao copiar a chave PIX.');
-            });
+        .pix-key {
+            display: inline-block;
+            padding: 10px;
+            border: 1px solid #c83e73;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            margin: 10px 0;
         }
-    </script>
+    </style>
 </head>
 <body>
     <div class="email-container">
@@ -170,7 +168,7 @@ const templatePagamento = `
             <h1>Lembrete de Pagamento</h1>
             <p>Estou ansiosa para te ver no KArraiá! 🎉</p>
             <p>Por favor, finalize seu pagamento para garantir sua presença.</p>
-            <p>Use o QR code abaixo para realizar o pagamento via PIX:</p>
+            <p>Use o QR code abaixo para realizar o pagamento via PIX</p>
             <div style="text-align: center; margin: 20px 0;">
                 <img
                     src="https://karraia.filipemoreno.com.br/pix.jpg"
@@ -178,13 +176,9 @@ const templatePagamento = `
                     style="width: 200px; height: 200px;"
                 />
             </div>
+            <p>Ou copie a chave PIX abaixo:</p>
             <div style="text-align: center; margin: 20px 0;">
-                <button
-                    class="button"
-                    onclick="copyToClipboard()"
-                >
-                    Copiar código PIX
-                </button>
+                <span class="pix-key">00020126550014br.gov.bcb.pix0122karolharummy@gmail.com0207KArraia5204000053039865802BR5925KAROLINE HARUMMY ROMERO M6012CAMPO MOURAO62290525Prp9SQnmN2zFCwtxEI8jvKsbi630482D1</span>
             </div>
         </div>
         <div class="footer">
