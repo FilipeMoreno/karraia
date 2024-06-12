@@ -35,7 +35,7 @@ export default function Home() {
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			const eventDate = new Date(Date.UTC(2024, 5, 13, 18, 0, 0))
+			const eventDate = new Date(Date.UTC(2024, 5, 29, 18, 0, 0))
 			eventDate.setHours(eventDate.getHours() - 3)
 
 			const now = new Date()
