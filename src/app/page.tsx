@@ -1,5 +1,6 @@
 'use client'
 
+import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -22,16 +23,12 @@ export default function Home() {
 		return route.push('/confirmar')
 	}
 
+	
+
 	return (
 		<>
-			<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-8 lg:p-24">
-				<Image
-					src="/logo.svg"
-					alt="logo"
-					width={400}
-					height={400}
-					className="animate-duration-[5000ms] animate-infinite animate-wiggle"
-				/>
+			<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4 lg:p-24">
+				<LogoComponent />
 				<Card className="w-full lg:w-[600px]">
 					<CardHeader>
 						<CardTitle>Confirmar Presença</CardTitle>

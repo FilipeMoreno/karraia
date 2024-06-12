@@ -1,5 +1,6 @@
-import { getApps, initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getDatabase, ref, set } from 'firebase/database';
 
 const firebaseConfig = {
 	apiKey: process.env.FIREBASE_API_KEY,
@@ -9,8 +10,12 @@ const firebaseConfig = {
 	messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
 	appId: process.env.FIREBASE_APP_ID,
 	measurementId: process.env.FIREBASE_MEASUREMENT_ID,
-}
+};
 
 const firebase =
-	getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-export const auth = getAuth(firebase)
+	getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+const auth = getAuth(firebase);
+const database = getDatabase(firebase);
+
+export { auth, database };

@@ -1,5 +1,6 @@
 'use client'
 
+import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -9,9 +10,11 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
-import Image from 'next/image'
+import { database } from '@/lib/firebaseService'
+import { ref, set } from 'firebase/database'
 import { useRouter } from 'next/navigation'
 import { PiSignOutBold } from 'react-icons/pi'
+import { toast } from 'sonner'
 
 export default function Confirmar() {
 	const { userAuth, logout } = userAuthContext()
@@ -21,27 +24,36 @@ export default function Confirmar() {
 		return route.push('/')
 	}
 
+function confirmarPresenca() {
+	const userRef = ref(database, 'confirmados/' + userAuth?.uid);
+	set(userRef, {
+		name: userAuth?.displayName,
+		email: userAuth?.email,
+		presenca: true,
+		confirmado_em: Date.now(),
+		pago: false,
+	})
+	.then(() => {
+		toast.success("Presença confirmada com sucesso.")
+		route.push('/confirmar/confirmado')
+	})
+	.catch((error) => {
+		toast.error('Erro ao confirmar presença', {
+			description: error
+		})
+		console.error("Erro ao confirmar presença: ", error);
+	});
+}
+
+
 	return (
 		<>
-			<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj p-8 lg:p-24">
-				<Image
-					src="/logo.svg"
-					width={300}
-					height={300}
-					alt="Logo"
-					className="animate-duration-[5000ms] animate-infinite animate-wiggle"
-				/>
-
+			<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj p-4 lg:p-24">
+				<LogoComponent />
 				<Card className="w-full lg:w-[600px]">
 					<CardHeader>
 						<CardTitle>
-							<div className="flex items-center justify-between">
 								<p>Olá, {userAuth?.displayName}!</p>
-								<Button onClick={logout} variant={'destructive'}>
-									<PiSignOutBold className="mr-2" />
-									Sair do app
-								</Button>
-							</div>
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
@@ -50,12 +62,16 @@ export default function Confirmar() {
 						exercitationem, impedit ullam cupiditate voluptate doloribus sunt.
 						Beatae facilis ex quo?
 					</CardContent>
-					<CardFooter className="gap-4">
+					<CardFooter className="gap-4 flex flex-col">
 						<Button
-							onClick={() => route.push('/confirmar/confirmado')}
+							onClick={() => confirmarPresenca()}
 							className="w-full"
 						>
 							Confirmar minha presença
+						</Button>
+						<Button onClick={logout} variant={'destructive'} className='w-full'>
+							<PiSignOutBold className="mr-2" />
+							Sair do app
 						</Button>
 					</CardFooter>
 				</Card>

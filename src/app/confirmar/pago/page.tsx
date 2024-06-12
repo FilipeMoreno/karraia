@@ -1,5 +1,6 @@
 'use client'
 
+import LogoComponent from '@/components/logo'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
@@ -18,15 +19,9 @@ export default function Confirmado() {
 	}
 
 	return (
-		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-8">
-			<Image
-				src="/logo.svg"
-				width={300}
-				height={300}
-				alt="Logo"
-				className="animate-duration-[5000ms] animate-infinite animate-wiggle"
-			/>
-			<Card className="w-[600px]">
+		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4">
+			<LogoComponent />
+			<Card className="w-full lg:w-[600px]">
 				<CardContent>
 					<div className="mt-4 flex flex-col items-center justify-center gap-2">
 						<InfoIcon size={60} color="orange" />
@@ -44,7 +39,7 @@ export default function Confirmado() {
 					</Button>
 				</CardFooter>
 			</Card>
-			<Card className="w-[600px]">
+			<Card className="w-full lg:w-[600px]">
 				<CardContent>
 					<div className="mt-4 flex flex-col items-center justify-center gap-2">
 						{/* <CheckCircleIcon size={60} color="green" /> */}

@@ -1,5 +1,6 @@
 'use client'
 
+import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
@@ -8,6 +9,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { PiSignOutBold } from 'react-icons/pi'
 import { toast } from 'sonner'
+import {FaPix} from 'react-icons/fa6'
 
 export default function Confirmado() {
 	const { userAuth, logout } = userAuthContext()
@@ -25,15 +27,9 @@ export default function Confirmado() {
 	}
 
 	return (
-		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-8">
-			<Image
-				src="/logo.svg"
-				width={300}
-				height={300}
-				alt="Logo"
-				className="animate-duration-[5000ms] animate-infinite animate-wiggle"
-			/>
-			<Card className="w-[600px]">
+		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4">
+			<LogoComponent />
+			<Card className="w-full lg:w-[600px]">
 				<CardContent>
 					<div className="mt-4 flex flex-col items-center justify-center gap-2">
 						<CheckCircle2Icon size={60} color="green" />
@@ -44,7 +40,8 @@ export default function Confirmado() {
 						<Image src="/pix.jpg" height={300} width={300} alt="QRCode PIX" />
 
 						<Button onClick={() => copyToClipboard()}>
-							Copiar código do PIX
+							
+							Copiar código do <FaPix className='ml-1.5 mr-1' /> PIX
 						</Button>
 					</div>
 				</CardContent>
