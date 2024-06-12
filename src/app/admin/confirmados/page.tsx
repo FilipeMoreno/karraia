@@ -21,6 +21,7 @@ import {
 	Table,
 	TableBody,
 	TableCell,
+	TableFooter,
 	TableHead,
 	TableHeader,
 	TableRow,
@@ -253,7 +254,7 @@ export default function Confirmados() {
 								key={confirmado?.id}
 								style={
 									index % 2
-										? { background: '#e4e4e4' }
+										? { background: '#e7e7e7' }
 										: { background: 'white' }
 								}
 							>
@@ -346,6 +347,14 @@ export default function Confirmados() {
 							</TableRow>
 						))}
 					</TableBody>
+					<TableFooter>
+						<div className="p-4">
+							<p className="font-light text-sm text-zinc-500">
+								Total de confirmados: {getTotalConfirmados()} | Total de pagos:{' '}
+								{getTotalPagos()}
+							</p>
+						</div>
+					</TableFooter>
 				</Table>
 			</Card>
 		</main>
