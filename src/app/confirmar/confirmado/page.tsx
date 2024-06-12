@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { FaPix } from 'react-icons/fa6'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
 import { toast } from 'sonner'
+import AvatarConfirmados from '../components/avatar-confirmados'
 
 export default function Confirmado() {
 	const { userAuth, logout } = userAuthContext()
@@ -62,7 +63,9 @@ export default function Confirmado() {
 						<p className="font-bold text-xl">
 							Presença confirmada, {userAuth.displayName}!
 						</p>
+						<AvatarConfirmados modelo={1} />
 						<p className="flex flex-row items-center">
+							<PiSirenFill color="red" className="mr-2 h-5 w-5 animate-pulse" />
 							Seu pagamento está pendente!
 							<PiSirenFill color="red" className="ml-2 h-5 w-5 animate-pulse" />
 						</p>

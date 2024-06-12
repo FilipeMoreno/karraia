@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { GiPartyFlags, GiPartyPopper } from 'react-icons/gi'
 import { PiSignOutBold } from 'react-icons/pi'
 import { toast } from 'sonner'
+import AvatarConfirmados from './components/avatar-confirmados'
 
 export default function Confirmar() {
 	const { userAuth, logout } = userAuthContext()
@@ -84,6 +85,9 @@ export default function Confirmar() {
 							<div className="text-justify text-lg">
 								<p>Adoraria ter sua presença no meu aniversário! 🎈</p>
 								<b>Bora comemorar comigo? 🫣</b>
+							</div>
+							<div>
+								<AvatarConfirmados modelo={2} />
 							</div>
 							<div className="flex flex-col gap-2">
 								<p>Acompanhante, informe o nome do convidado abaixo.</p>

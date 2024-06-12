@@ -75,6 +75,11 @@ const config = {
 			backgroundImage: {
 				fj: "url('/fj.png')",
 			},
+			fontFamily: {
+				inter: ['var(--font-inter)'],
+				caveat: ['var(--font-caveat)'],
+				jura: ['var(--font-jura)'],
+			},
 		},
 	},
 	plugins: [require('tailwindcss-animate'), require('tailwindcss-animated')],
