@@ -3,13 +3,20 @@
 import { sendMail } from '@/actions/sendMail'
 import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
 	Card,
 	CardDescription,
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import {
+	Menubar,
+	MenubarContent,
+	MenubarItem,
+	MenubarMenu,
+	MenubarTrigger,
+} from '@/components/ui/menubar'
 import {
 	Table,
 	TableBody,
@@ -110,6 +117,22 @@ export default function Confirmados() {
 			})
 	}
 
+	function cancelarPresenca(id: string) {
+		const userRef = ref(database, `confirmados/${id}`)
+		update(userRef, {
+			presenca: false,
+			presenca_confirmada_em: null,
+		})
+			.then(() => {
+				toast.success('Presença cancelada com sucesso!')
+			})
+			.catch((error: Error) => {
+				toast.error('Erro ao cancelar presença', {
+					description: error.message,
+				})
+			})
+	}
+
 	function getTotalConfirmados() {
 		return confirmados.filter((confirmado) => confirmado?.presenca).length
 	}
@@ -158,8 +181,15 @@ export default function Confirmados() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{confirmados.map((confirmado) => (
-							<TableRow key={confirmado?.id}>
+						{confirmados.map((confirmado, index) => (
+							<TableRow
+								key={confirmado?.id}
+								style={
+									index % 2
+										? { background: '#e4e4e4' }
+										: { background: 'white' }
+								}
+							>
 								<TableCell className="font-medium">
 									{confirmado?.name}
 								</TableCell>
@@ -171,7 +201,15 @@ export default function Confirmados() {
 											}).format(new Date(confirmado.confirmado_em))
 										: 'Data não disponível'}
 								</TableCell>
-								<TableCell>{confirmado?.pago ? 'Sim' : 'Não'}</TableCell>
+								<TableCell>
+									{confirmado?.pago ? (
+										<Badge className="bg-[#54ba4c]">Sim</Badge>
+									) : (
+										<Badge variant={'destructive'} color="#ec2d23">
+											Não
+										</Badge>
+									)}
+								</TableCell>
 								<TableCell>
 									{confirmado?.pagamento_confirmado_em
 										? Intl.DateTimeFormat('pt-BR', {
@@ -181,23 +219,22 @@ export default function Confirmados() {
 										: 'Não pago'}
 								</TableCell>
 								<TableCell>
-									{confirmado?.pago && (
-										<Button
-											variant={'destructive'}
-											onClick={() => cancelarPagamento(confirmado?.id)}
-										>
-											Cancelar Pagamento
-										</Button>
-									)}
-									{!confirmado?.pago && (
-										<Button
-											onClick={() =>
-												confirmarPagamento(confirmado?.id, confirmado?.email)
-											}
-										>
-											Confirmar Pagamento
-										</Button>
-									)}
+									<Menubar>
+										<MenubarMenu>
+											<MenubarTrigger>Ações</MenubarTrigger>
+											<MenubarContent>
+												{confirmado?.pago && (
+													<MenubarItem>Cancelar pagamento</MenubarItem>
+												)}
+												{!confirmado?.pago && (
+													<MenubarItem>Confirmar pagamento</MenubarItem>
+												)}
+												{confirmado?.presenca && (
+													<MenubarItem>Cancelar presença</MenubarItem>
+												)}
+											</MenubarContent>
+										</MenubarMenu>
+									</Menubar>
 								</TableCell>
 							</TableRow>
 						))}

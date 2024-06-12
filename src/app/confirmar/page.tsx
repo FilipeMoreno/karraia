@@ -14,12 +14,14 @@ import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
 import { child, get, ref, set } from 'firebase/database'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { GiPartyFlags, GiPartyPopper } from 'react-icons/gi'
 import { PiSignOutBold } from 'react-icons/pi'
 import { toast } from 'sonner'
 
 export default function Confirmar() {
 	const { userAuth, logout } = userAuthContext()
+	const [acompanhante, setAcompanhante] = useState('')
 	const route = useRouter()
 
 	if (!userAuth) {
@@ -43,6 +45,7 @@ export default function Confirmar() {
 						avatar: userAuth?.photoURL,
 						display_name: userAuth?.displayName,
 						user_id: userAuth?.uid,
+						acompanhante: acompanhante || null,
 					})
 						.then(() => {
 							toast.success('Presença confirmada com sucesso.')
@@ -84,7 +87,17 @@ export default function Confirmar() {
 							</div>
 							<div className="flex flex-col gap-2">
 								<p>Acompanhante, informe o nome do convidado abaixo.</p>
-								<Input type="text" id="convidado" placeholder="Nome" />
+								<Input
+									onChange={() => {
+										setAcompanhante(
+											(document.getElementById('convidado') as HTMLInputElement)
+												.value,
+										)
+									}}
+									type="text"
+									id="convidado"
+									placeholder="Nome"
+								/>
 							</div>
 						</div>
 					</CardContent>
