@@ -21,21 +21,33 @@ const jura = Jura({
 	variable: '--font-jura',
 })
 
+let description = ''
+
+const daysLeft = new Date('2024-06-29').getTime() - new Date().getTime()
+const days = Math.floor(daysLeft / (1000 * 60 * 60 * 24))
+
+if (days < 0) {
+	description = 'KArraiá - 29 de junho de 2024 | Aconteceu!'
+} else {
+	description = `KArraiá - 29 de junho de 2024 | Faltam ${days} dias!`
+}
+
 export const metadata: Metadata = {
 	title: 'KArraiá',
-	description: 'KArraiá - 29 de junho de 2024',
+	description: description,
 	openGraph: {
 		title: 'KArraiá',
-		description: 'KArraiá - 29 de junho de 2024',
+		description: description,
 		type: 'website',
 		url: 'https://karraia.vercel.app',
 		images: 'https://i.imgur.com/uXOHKjv.png',
 		locale: 'pt-BR',
+		siteName: 'KArraiá',
 	},
 	twitter: {
 		card: 'summary_large_image',
 		images: 'https://i.imgur.com/uXOHKjv.png',
-		description: 'KArraiá - 29 de junho de 2024',
+		description: description,
 		title: 'KArraiá',
 	},
 	appleWebApp: {
