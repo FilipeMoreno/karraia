@@ -10,10 +10,20 @@ const nextConfig = {
 		FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
 		GOOGLE_WEB_CLIENT_ID: process.env.GOOGLE_WEB_CLIENT_ID,
 		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+		AUTH_RESEND_KEY: process.env.AUTH_RESEND_KEY,
 	},
 	reactStrictMode: true,
 	images: {
-		domains: ['firebasestorage.googleapis.com', 'lh3.googleusercontent.com'],
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'firebasestorage.googleapis.com',
+			},
+			{
+				protocol: 'https',
+				hostname: 'lh3.googleusercontent.com',
+			},
+		],
 	},
 }
 

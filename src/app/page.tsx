@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { googleLogin } from '@/lib/authService'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { FaGoogle } from 'react-icons/fa'
 
@@ -23,15 +22,15 @@ export default function Home() {
 		return route.push('/confirmar')
 	}
 
-	
-
 	return (
 		<>
 			<main className="flex min-h-screen flex-col items-center gap-8 bg-fj p-4 lg:p-24">
 				<LogoComponent />
-				<Card className="w-full lg:w-[600px]">
+				<Card className="w-full animate-delay-300 animate-fade-down lg:w-[600px]">
 					<CardHeader>
-						<CardTitle>Confirmar Presença</CardTitle>
+						<CardTitle className="text-center">
+							Confirme sua presença!
+						</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<p>

@@ -9,10 +9,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
-import { ref, set } from 'firebase/database'
+import { child, get, ref, set } from 'firebase/database'
 import { useRouter } from 'next/navigation'
+import { GiPartyFlags, GiPartyPopper } from 'react-icons/gi'
 import { PiSignOutBold } from 'react-icons/pi'
 import { toast } from 'sonner'
 
@@ -24,55 +26,74 @@ export default function Confirmar() {
 		return route.push('/')
 	}
 
-function confirmarPresenca() {
-	const userRef = ref(database, 'confirmados/' + userAuth?.uid);
-	set(userRef, {
-		name: userAuth?.displayName,
-		email: userAuth?.email,
-		presenca: true,
-		confirmado_em: Date.now(),
-		pago: false,
-		avatar: userAuth?.photoURL,
-		display_name: userAuth?.displayName,
-		user_id: userAuth?.uid,
-	})
-	.then(() => {
-		toast.success("Presença confirmada com sucesso.")
-		route.push('/confirmar/confirmado')
-	})
-	.catch((error) => {
-		toast.error('Erro ao confirmar presença', {
-			description: error
-		})
-		console.error("Erro ao confirmar presença: ", error);
-	});
-}
-
+	function confirmarPresenca() {
+		const userRef = ref(database, `confirmados/${userAuth?.uid}`)
+		get(child(ref(database), `confirmados/${userAuth?.uid}`))
+			.then((snapshot) => {
+				if (snapshot.exists()) {
+					toast.info('Sua presença já está confirmada.')
+					route.push('/confirmar/confirmado')
+				} else {
+					set(userRef, {
+						name: userAuth?.displayName,
+						email: userAuth?.email,
+						presenca: true,
+						confirmado_em: Date.now(),
+						pago: false,
+						avatar: userAuth?.photoURL,
+						display_name: userAuth?.displayName,
+						user_id: userAuth?.uid,
+					})
+						.then(() => {
+							toast.success('Presença confirmada com sucesso.')
+							route.push('/confirmar/confirmado')
+						})
+						.catch((error) => {
+							toast.error('Erro ao confirmar presença', {
+								description: error,
+							})
+							console.error('Erro ao confirmar presença: ', error)
+						})
+				}
+			})
+			.catch((error) => {
+				toast.error('Erro ao verificar confirmação de presença', {
+					description: error,
+				})
+				console.error('Erro ao verificar confirmação de presença: ', error)
+			})
+	}
 
 	return (
 		<>
 			<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj p-4 lg:p-24">
 				<LogoComponent />
-				<Card className="w-full lg:w-[600px]">
+				<Card className="w-full animate-delay-300 animate-fade-down lg:w-[600px]">
 					<CardHeader>
 						<CardTitle>
+							<div className="flex items-center">
 								<p>Olá, {userAuth?.displayName}!</p>
+							</div>
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolores,
-						aliquid. Porro quod nemo, amet suscipit quaerat laboriosam labore in
-						exercitationem, impedit ullam cupiditate voluptate doloribus sunt.
-						Beatae facilis ex quo?
+						<div className="flex flex-col gap-4">
+							<div className="text-justify text-lg">
+								<p>Adoraria ter sua presença no meu aniversário! 🎈</p>
+								<b>Bora comemorar comigo? 🫣</b>
+							</div>
+							<div className="flex flex-col gap-2">
+								<p>Acompanhante, informe o nome do convidado abaixo.</p>
+								<Input type="text" id="convidado" placeholder="Nome" />
+							</div>
+						</div>
 					</CardContent>
-					<CardFooter className="gap-4 flex flex-col">
-						<Button
-							onClick={() => confirmarPresenca()}
-							className="w-full"
-						>
+					<CardFooter className="flex flex-col gap-4">
+						<Button onClick={() => confirmarPresenca()} className="w-full">
+							<span className="mr-2 text-lg">🎉</span>
 							Confirmar minha presença
 						</Button>
-						<Button onClick={logout} variant={'destructive'} className='w-full'>
+						<Button onClick={logout} variant={'destructive'} className="w-full">
 							<PiSignOutBold className="mr-2" />
 							Sair do app
 						</Button>
