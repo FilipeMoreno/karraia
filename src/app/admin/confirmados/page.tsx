@@ -111,6 +111,14 @@ export default function Confirmados() {
 				pago: true,
 				pagamento_confirmado_em: Date.now(),
 			})
+				.then(() => {
+					sendMailPagamento(email)
+				})
+				.catch((error) => {
+					throw new Error(
+						`Erro ao enviar e-mail de confirmação de pagamento. Erro: ${error.message}`,
+					)
+				})
 			toast.success('Pagamento confirmado com sucesso!', {
 				description: 'E-mail de confirmação enviado',
 			})
