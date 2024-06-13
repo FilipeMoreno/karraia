@@ -131,7 +131,7 @@ export default function Confirmados() {
 				description: 'E-mail de confirmação enviado',
 			})
 			updateConfirmados(id, { pago: true, pagamento_confirmado_em: Date.now() })
-		} catch (error) {
+		} catch (error: any) {
 			toast.error('Erro ao confirmar pagamento', {
 				description: error?.message,
 			})
@@ -150,7 +150,7 @@ export default function Confirmados() {
 			})
 			toast.success('Pagamento cancelado com sucesso!')
 			updateConfirmados(id, { pago: false, pagamento_confirmado_em: null })
-		} catch (error) {
+		} catch (error: any) {
 			toast.error('Erro ao cancelar pagamento', {
 				description: error.message,
 			})
@@ -167,7 +167,7 @@ export default function Confirmados() {
 				prevConfirmados.filter((confirmado) => confirmado.id !== id),
 			)
 			toast.success('Presença cancelada com sucesso!')
-		} catch (error) {
+		} catch (error: any) {
 			toast.error('Erro ao cancelar presença', {
 				description: error.message,
 			})
@@ -200,7 +200,7 @@ export default function Confirmados() {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			toast.error('Erro ao buscar dados do usuário', {
 				description: error.message,
 			})
