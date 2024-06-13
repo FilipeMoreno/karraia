@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
-import { get, ref } from 'firebase/database'
+import { get, off, onValue, ref } from 'firebase/database'
 import { CheckCircle2Icon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { FaArrowRight, FaCheckCircle } from 'react-icons/fa'
-import { FaCopy, FaPix } from 'react-icons/fa6'
+import router from 'next/router'
+import { useEffect, useState } from 'react'
+import { FaCheckCircle } from 'react-icons/fa'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
 import { toast } from 'sonner'
 import AvatarConfirmados from '../components/avatar-confirmados'
@@ -19,10 +20,14 @@ export default function Confirmado() {
 	const { userAuth, logout } = userAuthContext()
 	const route = useRouter()
 
-	if (!userAuth) {
-		route.push('/')
-		return null
-	}
+	useEffect(() => {
+		if (!userAuth) {
+			route.push('/')
+		} else {
+			const unsubscribe = verificarPagamento()
+			return () => unsubscribe()
+		}
+	}, [userAuth])
 
 	const copyToClipboard = () => {
 		navigator.clipboard.writeText(
@@ -32,23 +37,26 @@ export default function Confirmado() {
 	}
 
 	const verificarPagamento = () => {
-		get(ref(database, `confirmados/${userAuth?.uid}`))
-			.then((snapshot) => {
+		const pagamentoRef = ref(database, `confirmados/${userAuth?.uid}/pago`)
+
+		const pagamentoListener = onValue(
+			pagamentoRef,
+			(snapshot) => {
 				if (snapshot.exists()) {
-					const { pago } = snapshot.val()
+					const pago = snapshot.val()
 					if (pago) {
+						toast.success('Pagamento confirmado!')
 						route.push('/confirmar/pago')
 					}
-				} else {
-					console.log('No data available')
 				}
-			})
-			.catch((error) => {
-				console.error(error)
-			})
-	}
+			},
+			(error) => {
+				console.error('Erro ao verificar pagamento: ', error)
+			},
+		)
 
-	verificarPagamento()
+		return () => off(pagamentoRef, 'value', pagamentoListener)
+	}
 
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj bg-no-repeat p-4">
@@ -62,7 +70,7 @@ export default function Confirmado() {
 							className="animate-delay-500 animate-rotate-y"
 						/>
 						<p className="font-bold text-xl">
-							Presença confirmada, {userAuth.displayName}!
+							Presença confirmada, {userAuth?.displayName}!
 						</p>
 						<AvatarConfirmados modelo={1} />
 						<p className="flex flex-row items-center">
@@ -88,7 +96,8 @@ export default function Confirmado() {
 							</div>
 
 							<Button onClick={copyToClipboard} className="mb-4 w-[60%]">
-								Copiar código <FaPix className="mr-1 ml-1.5" color="#38beb0" />
+								Copiar código
+								<FaCheckCircle className="mr-1 ml-1.5" color="#38beb0" />
 								<b className="text-[#38beb0]">PIX</b>
 							</Button>
 						</div>
@@ -96,7 +105,7 @@ export default function Confirmado() {
 				</CardContent>
 				<CardFooter className="flex flex-col gap-4">
 					<Button
-						onClick={() => route.push('/confirmar/pago')}
+						onClick={() => router.push('/confirmar/pago')}
 						className="w-full"
 					>
 						<FaCheckCircle className="mr-2" />

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
-import { get, ref } from 'firebase/database'
+import { off, onValue, ref } from 'firebase/database'
 import { InfoIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -27,31 +27,39 @@ export default function Confirmado() {
 		if (!userAuth) {
 			route.push('/')
 		} else {
-			const verificarPagamento = async () => {
-				try {
-					const snapshot = await get(
-						ref(database, `confirmados/${userAuth?.uid}`),
-					)
-					if (snapshot.exists()) {
-						const { pago } = snapshot.val()
-						setPago(pago)
-					}
-				} catch (error) {
-					console.error(error)
-				} finally {
-					setCarregando(false)
-				}
-			}
-			verificarPagamento()
+			const unsubscribe = verificarPagamento()
+			return () => unsubscribe()
 		}
 	}, [userAuth])
+
+	const verificarPagamento = () => {
+		const pagamentoRef = ref(database, `confirmados/${userAuth?.uid}/pago`)
+
+		const pagamentoListener = onValue(
+			pagamentoRef,
+			(snapshot) => {
+				if (snapshot.exists()) {
+					const pago = snapshot.val()
+					setPago(pago)
+				}
+				setCarregando(false)
+			},
+			(error) => {
+				console.error('Erro ao verificar pagamento: ', error)
+				setCarregando(false)
+			},
+		)
+
+		return () => off(pagamentoRef, 'value', pagamentoListener)
+	}
 
 	useEffect(() => {
 		const fetchConfirmadoData = async () => {
 			try {
-				const snapshot = await get(
-					ref(database, `confirmados/${userAuth?.uid}`),
-				)
+				const snapshot = await ref(
+					database,
+					`confirmados/${userAuth?.uid}`,
+				).get()
 				if (snapshot.exists()) {
 					setConfirmadoData(snapshot.val())
 				} else {
