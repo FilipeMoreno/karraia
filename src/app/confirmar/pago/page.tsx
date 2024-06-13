@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
-import { off, onValue, ref } from 'firebase/database'
+import { get, getDatabase, off, onValue, ref } from 'firebase/database'
 import { InfoIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -56,10 +56,8 @@ export default function Confirmado() {
 	useEffect(() => {
 		const fetchConfirmadoData = async () => {
 			try {
-				const snapshot = await ref(
-					database,
-					`confirmados/${userAuth?.uid}`,
-				).get()
+				const db = getDatabase()
+				const snapshot = await get(ref(db, `confirmados/${userAuth?.uid}`))
 				if (snapshot.exists()) {
 					setConfirmadoData(snapshot.val())
 				} else {
