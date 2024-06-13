@@ -112,7 +112,7 @@ export default function Confirmados() {
 				pagamento_confirmado_em: Date.now(),
 			})
 				.then(() => {
-					sendMailPagamento(email)
+					sendMailConfirmacao(email)
 				})
 				.catch((error) => {
 					throw new Error(
