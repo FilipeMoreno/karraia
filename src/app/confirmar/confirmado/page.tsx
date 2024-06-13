@@ -10,7 +10,7 @@ import { off, onValue, ref } from 'firebase/database'
 import { CheckCircle2Icon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FaCheckCircle } from 'react-icons/fa'
 import { FaPix } from 'react-icons/fa6'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
@@ -20,13 +20,18 @@ import AvatarConfirmados from '../components/avatar-confirmados'
 export default function Confirmado() {
 	const { userAuth, logout } = userAuthContext()
 	const route = useRouter()
+	const [isPresencaConfirmada, setIsPresencaConfirmada] = useState(false)
 
 	useEffect(() => {
 		if (!userAuth) {
 			route.push('/')
 		} else {
-			const unsubscribe = verificarPagamento()
-			return () => unsubscribe()
+			const unsubscribePresenca = verificarPresenca()
+			const unsubscribePagamento = verificarPagamento()
+			return () => {
+				unsubscribePresenca()
+				unsubscribePagamento()
+			}
 		}
 	}, [userAuth])
 
@@ -35,6 +40,32 @@ export default function Confirmado() {
 			'00020126550014br.gov.bcb.pix0122karolharummy@gmail.com0207KArraia5204000053039865802BR5925KAROLINE HARUMMY ROMERO M6012CAMPO MOURAO62290525Prp9SQnmN2zFCwtxEI8jvKsbi630482D1',
 		)
 		toast.success('Código copiado para a área de transferência')
+	}
+
+	const verificarPresenca = () => {
+		const presencaRef = ref(database, `confirmados/${userAuth?.uid}/presenca`)
+
+		const presencaListener = onValue(
+			presencaRef,
+			(snapshot) => {
+				if (snapshot.exists()) {
+					const presenca = snapshot.val()
+					if (presenca) {
+						setIsPresencaConfirmada(true)
+					} else {
+						route.push('/confirmar')
+					}
+				} else {
+					route.push('/confirmar')
+				}
+			},
+			(error) => {
+				console.error('Erro ao verificar presença: ', error)
+				route.push('/confirmar')
+			},
+		)
+
+		return () => off(presencaRef, 'value', presencaListener)
 	}
 
 	const verificarPagamento = () => {
@@ -47,7 +78,7 @@ export default function Confirmado() {
 					const pago = snapshot.val()
 					if (pago) {
 						toast.success('Pagamento confirmado!')
-						route.push('/confirmar/pago')
+						route.push('/confirmar/pagamento')
 					}
 				}
 			},
@@ -57,6 +88,10 @@ export default function Confirmado() {
 		)
 
 		return () => off(pagamentoRef, 'value', pagamentoListener)
+	}
+
+	if (!isPresencaConfirmada) {
+		return null
 	}
 
 	return (
@@ -106,7 +141,7 @@ export default function Confirmado() {
 				</CardContent>
 				<CardFooter className="flex flex-col gap-4">
 					<Button
-						onClick={() => route.push('/confirmar/pago')}
+						onClick={() => route.push('/confirmar/pagamento')}
 						className="w-full"
 					>
 						<FaCheckCircle className="mr-2" />
