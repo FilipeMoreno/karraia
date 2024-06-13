@@ -6,23 +6,23 @@ import LogoComponent from '@/components/logo'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-	Card,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
-import {
-	Menubar,
-	MenubarContent,
-	MenubarItem,
-	MenubarMenu,
-	MenubarTrigger,
-} from '@/components/ui/menubar'
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuPortal,
+	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
 	Table,
 	TableBody,
 	TableCell,
+	TableFooter,
 	TableHead,
 	TableHeader,
 	TableRow,
@@ -33,7 +33,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { get, onValue, ref, remove, update } from 'firebase/database'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { FaSpinner } from 'react-icons/fa6'
+import { FaEllipsisVertical, FaSpinner } from 'react-icons/fa6'
 import { toast } from 'sonner'
 
 export default function Confirmados() {
@@ -41,7 +41,6 @@ export default function Confirmados() {
 	const [loading, setLoading] = useState(true)
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [loadingButtonId, setLoadingButtonId] = useState<string | null>(null)
-	const [pageActive, setPageActive] = useState(false)
 
 	const router = useRouter()
 
@@ -67,22 +66,6 @@ export default function Confirmados() {
 		})
 
 		return () => unsubscribe()
-	}, [])
-
-	useEffect(() => {
-		const handleVisibilityChange = () => {
-			if (document.visibilityState === 'visible') {
-				setPageActive(true)
-			} else {
-				setPageActive(false)
-			}
-		}
-
-		document.addEventListener('visibilitychange', handleVisibilityChange)
-
-		return () => {
-			document.removeEventListener('visibilitychange', handleVisibilityChange)
-		}
 	}, [])
 
 	const fetchData = () => {
@@ -227,28 +210,6 @@ export default function Confirmados() {
 			<Card className="w-full">
 				<CardHeader>
 					<CardTitle>Lista dos confirmados</CardTitle>
-					<CardDescription className="flex flex-row items-center justify-between gap-4">
-						<div>
-							<p>Total de confirmados: {getTotalConfirmados()}</p>
-							<p>
-								Total de pagos: {getTotalPagos()} (Faltam{' '}
-								{getTotalConfirmados() - getTotalPagos()})
-							</p>
-							<p>
-								Total arrecadado:{' '}
-								{Intl.NumberFormat('pt-BR', {
-									style: 'currency',
-									currency: 'BRL',
-								}).format(getTotalPagos() * 25)}
-							</p>
-						</div>
-						<div>
-							<Button onClick={() => toast.error('Função não disponível')}>
-								Enviar e-mail aos não pagos (
-								{getTotalConfirmados() - getTotalPagos()})
-							</Button>
-						</div>
-					</CardDescription>
 				</CardHeader>
 				<Table>
 					<TableHeader>
@@ -307,75 +268,120 @@ export default function Confirmados() {
 												dateStyle: 'medium',
 												timeStyle: 'medium',
 											}).format(new Date(confirmado.pagamento_confirmado_em))
-										: 'Não pago'}
+										: 'Pagamento Pendente'}
 								</TableCell>
 								<TableCell>{confirmado?.acompanhante || 'Ninguém'}</TableCell>
 								<TableCell>
-									<Menubar>
-										<MenubarMenu>
-											<MenubarTrigger>Ações</MenubarTrigger>
-											<MenubarContent>
-												{confirmado?.pago && (
-													<MenubarItem
-														onClick={() => cancelarPagamento(confirmado?.id)}
-													>
-														Cancelar pagamento
-													</MenubarItem>
-												)}
-												{!confirmado?.pago && (
-													<MenubarItem
-														onClick={() =>
-															confirmarPagamento(
-																confirmado?.id,
-																confirmado?.email,
-															)
-														}
-													>
-														{loadingButtonId === confirmado.id ? (
-															<FaSpinner className="animate-spin" />
-														) : (
-															'Confirmar pagamento'
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size={'icon'}>
+												<FaEllipsisVertical className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent className="w-56">
+											<DropdownMenuSub>
+												<DropdownMenuSubTrigger>
+													Mudar status
+												</DropdownMenuSubTrigger>
+												<DropdownMenuPortal>
+													<DropdownMenuSubContent>
+														{confirmado?.pago && (
+															<DropdownMenuItem
+																onClick={() =>
+																	cancelarPagamento(confirmado?.id)
+																}
+															>
+																Cancelar pagamento
+															</DropdownMenuItem>
 														)}
-													</MenubarItem>
-												)}
-
-												<MenubarItem
-													onClick={() =>
-														reenviarEmail(
-															confirmado?.id,
-															confirmado?.email,
-															'confirmacao',
-														)
-													}
-												>
-													Reenviar e-mail de confirmação
-												</MenubarItem>
-												<MenubarItem
-													onClick={() =>
-														reenviarEmail(
-															confirmado?.id,
-															confirmado?.email,
-															'pagamento',
-														)
-													}
-												>
-													Reenviar e-mail de pagamento
-												</MenubarItem>
-												{confirmado?.presenca && (
-													<MenubarItem
-														onClick={() => cancelarPresenca(confirmado?.id)}
-														className="text-red-500"
-													>
-														Cancelar presença
-													</MenubarItem>
-												)}
-											</MenubarContent>
-										</MenubarMenu>
-									</Menubar>
+														{!confirmado?.pago && (
+															<DropdownMenuItem
+																onClick={() =>
+																	confirmarPagamento(
+																		confirmado?.id,
+																		confirmado?.email,
+																	)
+																}
+															>
+																{loadingButtonId === confirmado.id ? (
+																	<FaSpinner className="animate-spin" />
+																) : (
+																	'Confirmar pagamento'
+																)}
+															</DropdownMenuItem>
+														)}
+													</DropdownMenuSubContent>
+												</DropdownMenuPortal>
+											</DropdownMenuSub>
+											<DropdownMenuSub>
+												<DropdownMenuSubTrigger>E-mail</DropdownMenuSubTrigger>
+												<DropdownMenuPortal>
+													<DropdownMenuSubContent>
+														<DropdownMenuItem
+															onClick={() =>
+																reenviarEmail(
+																	confirmado?.id,
+																	confirmado?.email,
+																	'confirmacao',
+																)
+															}
+														>
+															Enviar e-mail de confirmação
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() =>
+																reenviarEmail(
+																	confirmado?.id,
+																	confirmado?.email,
+																	'pagamento',
+																)
+															}
+														>
+															Enviar e-mail de pagamento
+														</DropdownMenuItem>
+													</DropdownMenuSubContent>
+												</DropdownMenuPortal>
+											</DropdownMenuSub>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem
+												onClick={() => cancelarPresenca(confirmado?.id)}
+												className="text-red-500"
+											>
+												Cancelar Presença
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
 								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
+					<TableFooter>
+						<TableRow>
+							<TableCell colSpan={6}>
+								<div>
+									<p>
+										Total de confirmados: <b>{getTotalConfirmados()}</b>
+									</p>
+									<p>
+										Total de pagos: <b>{getTotalPagos()}</b>
+									</p>
+									<p>
+										Faltam pagar:{' '}
+										<b>{getTotalConfirmados() - getTotalPagos()}</b>
+									</p>
+									<p>
+										Total arrecadado:{' '}
+										<b>
+											{Intl.NumberFormat('pt-BR', {
+												style: 'currency',
+												currency: 'BRL',
+											}).format(getTotalPagos() * 25)}
+										</b>
+									</p>
+								</div>
+							</TableCell>
+						</TableRow>
+					</TableFooter>
 				</Table>
 			</Card>
 		</main>
