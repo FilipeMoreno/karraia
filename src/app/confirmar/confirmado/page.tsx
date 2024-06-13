@@ -9,7 +9,6 @@ import { off, onValue, ref } from 'firebase/database'
 import { CheckCircle2Icon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import router from 'next/router'
 import { useEffect } from 'react'
 import { FaCheckCircle } from 'react-icons/fa'
 import { FaPix } from 'react-icons/fa6'
@@ -106,7 +105,7 @@ export default function Confirmado() {
 				</CardContent>
 				<CardFooter className="flex flex-col gap-4">
 					<Button
-						onClick={() => router.push('/confirmar/pago')}
+						onClick={() => route.push('/confirmar/pago')}
 						className="w-full"
 					>
 						<FaCheckCircle className="mr-2" />
