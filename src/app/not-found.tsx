@@ -1,5 +1,6 @@
 'use client'
 
+import FooterCard from '@/components/footer-card'
 import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -23,6 +24,7 @@ export default function NotFound() {
 					Voltar
 				</Button>
 			</Card>
+			<FooterCard />
 		</main>
 	)
 }

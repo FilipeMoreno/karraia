@@ -1,5 +1,6 @@
 'use client'
 
+import FooterCard from '@/components/footer-card'
 import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -64,6 +65,7 @@ export default function DashboardAdmin() {
 					</div>
 				</CardContent>
 			</Card>
+			<FooterCard />
 		</main>
 	)
 }

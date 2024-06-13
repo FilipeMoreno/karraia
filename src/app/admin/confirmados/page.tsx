@@ -1,6 +1,7 @@
 'use client'
 
 import { sendMailConfirmacao, sendMailPagamento } from '@/actions/sendMail'
+import FooterCard from '@/components/footer-card'
 import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
@@ -384,6 +385,7 @@ export default function Confirmados() {
 					</TableFooter>
 				</Table>
 			</Card>
+			<FooterCard />
 		</main>
 	)
 }

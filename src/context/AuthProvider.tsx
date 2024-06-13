@@ -1,6 +1,7 @@
 'use client'
 
 import Loading from '@/components/loading'
+import LogoComponent from '@/components/logo'
 import { auth } from '@/lib/firebaseService'
 import { type User, onAuthStateChanged, signOut } from 'firebase/auth'
 import { useRouter } from 'next/navigation'

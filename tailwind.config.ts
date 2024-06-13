@@ -82,6 +82,7 @@ const config = {
 				inter: ['var(--font-inter)'],
 				caveat: ['var(--font-caveat)'],
 				jura: ['var(--font-jura)'],
+				vt323: ['var(--font-vt323)'],
 			},
 		},
 	},

@@ -1,4 +1,6 @@
 import { withSentryConfig } from '@sentry/nextjs'
+import packageJson from './package.json' assert { type: 'json' }
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	env: {
@@ -20,6 +22,9 @@ const nextConfig = {
 		fetches: {
 			fullUrl: true,
 		},
+	},
+	publicRuntimeConfig: {
+		version: packageJson.version,
 	},
 	reactStrictMode: true,
 	images: {

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Caveat, Inter, Jura } from 'next/font/google'
+import { Caveat, Inter, Jura, VT323 } from 'next/font/google'
 import '@/styles/globals.css'
 import Providers from './providers'
 
@@ -19,6 +19,13 @@ const jura = Jura({
 	subsets: ['latin'],
 	display: 'swap',
 	variable: '--font-jura',
+})
+
+const vt323 = VT323({
+	subsets: ['latin'],
+	display: 'swap',
+	variable: '--font-vt323',
+	weight: '400',
 })
 
 let description = ''
@@ -76,7 +83,7 @@ export default function RootLayout({
 			</head>
 			<body
 				// biome-ignore lint/nursery/useSortedClasses: <explanation>
-				className={`${inter.variable} ${caveat.variable} ${jura.variable} bg-[#fbe3cb]`}
+				className={`${inter.variable} ${caveat.variable} ${jura.variable} ${vt323.variable} bg-[#fbe3cb]`}
 			>
 				<Providers>{children}</Providers>
 			</body>

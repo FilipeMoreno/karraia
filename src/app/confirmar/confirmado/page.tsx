@@ -1,5 +1,6 @@
 'use client'
 
+import FooterCard from '@/components/footer-card'
 import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -117,6 +118,7 @@ export default function Confirmado() {
 					</Button>
 				</CardFooter>
 			</Card>
+			<FooterCard />
 		</main>
 	)
 }

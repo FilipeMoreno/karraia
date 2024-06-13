@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import ReactLoading from 'react-loading'
+import FooterCard from './footer-card'
 
 export default function Loading() {
 	const [loadingText, setLoadingText] = useState('Carregando')

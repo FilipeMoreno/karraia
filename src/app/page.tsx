@@ -1,5 +1,6 @@
 'use client'
 
+import FooterCard from '@/components/footer-card'
 import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
@@ -172,18 +173,9 @@ export default function Home() {
 						<Button className="w-full" onClick={googleLogin}>
 							<FaGoogle className="mr-2" /> Entrar com Google
 						</Button>
-						<div className="-mb-4 mt-4 flex items-center justify-center gap-1 text-xs">
-							Development with <FaHeart className="text-red-500" /> by
-							<Link
-								href="https://github.com/filipemoreno"
-								target="_blank"
-								className="hover:text-[#c83e73] hover:underline"
-							>
-								Filipe Moreno
-							</Link>
-						</div>
 					</CardFooter>
 				</Card>
+				<FooterCard />
 			</main>
 		</>
 	)
