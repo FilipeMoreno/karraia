@@ -1,5 +1,6 @@
 'use client'
 
+import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,18 +12,38 @@ import {
 } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { googleLogin } from '@/lib/authService'
+import { database } from '@/lib/firebaseService'
+import { child, get, ref } from 'firebase/database'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { FaGoogle, FaHeart } from 'react-icons/fa'
+import { toast } from 'sonner'
 
 export default function Home() {
 	const { userAuth } = userAuthContext()
+	const [carregando, setCarregando] = useState(true)
 	const route = useRouter()
 
 	if (userAuth) {
-		return route.push('/confirmar')
+		get(child(ref(database), `confirmados/${userAuth?.uid}`))
+			.then((snapshot) => {
+				if (snapshot.exists()) {
+					route.push('/confirmar/confirmado')
+				} else {
+					route.push('/confirmar')
+				}
+			})
+			.catch((error) => {
+				toast.error('Erro ao verificar confirmação de presença', {
+					description: error,
+				})
+				console.error('Erro ao verificar confirmação de presença: ', error)
+			})
+			.finally(() => {
+				setCarregando(false)
+			})
 	}
 
 	const [time, setTime] = useState({
@@ -37,7 +58,7 @@ export default function Home() {
 	useEffect(() => {
 		const interval = setInterval(() => {
 			const eventDate = new Date(Date.UTC(2024, 5, 29, 18, 0, 0))
-			eventDate.setHours(eventDate.getHours() - 3)
+			eventDate.setHours(eventDate.getHours())
 
 			const now = new Date()
 			const nowUTC = new Date(
@@ -65,6 +86,12 @@ export default function Home() {
 
 		return () => clearInterval(interval)
 	}, [])
+
+	if (carregando) {
+		if (userAuth) {
+			return <Loading />
+		}
+	}
 
 	return (
 		<>

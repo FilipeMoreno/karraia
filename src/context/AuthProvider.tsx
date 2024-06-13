@@ -1,12 +1,12 @@
 'use client'
 
+import Loading from '@/components/loading'
 import { auth } from '@/lib/firebaseService'
 import { type User, onAuthStateChanged, signOut } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
 import type React from 'react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { AuthContext } from './AuthContext'
-import Loading from '@/components/loading'
 
 interface AuthContextProviderProps {
 	children: ReactNode
@@ -17,7 +17,6 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({
 }) => {
 	const [userAuth, setUserAuth] = useState<User | null>(null)
 	const [loading, setLoading] = useState(true)
-
 	const route = useRouter()
 
 	useEffect(() => {
@@ -27,12 +26,16 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({
 				setUserAuth(authUserCredentials)
 				setLoading(false)
 			},
+			(error) => {
+				console.error('Falha ao observar o estado de autenticação:', error)
+				setLoading(false)
+			},
 		)
 
 		return () => unsubscribe()
 	}, [])
 
-	async function logout() {
+	const logout = useCallback(async () => {
 		let result = null
 		let error = null
 		try {
@@ -43,15 +46,11 @@ export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({
 		}
 
 		return { result, error }
-	}
+	}, [route])
 
 	return (
 		<AuthContext.Provider value={{ userAuth, logout }}>
-			{loading ? (
-				<Loading />
-			) : (
-				children
-			)}
+			{loading ? <Loading /> : children}
 		</AuthContext.Provider>
 	)
 }

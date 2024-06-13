@@ -12,6 +12,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { PiSignOutBold } from 'react-icons/pi'
+import AvatarConfirmados from '../components/avatar-confirmados'
 
 export default function Confirmado() {
 	const { userAuth, logout } = userAuthContext()
@@ -85,6 +86,7 @@ export default function Confirmado() {
 								Aguarde a confirmação do seu pagamento. Assim que for
 								confirmado, você receberá as informações pelo e-mail cadastrado.
 							</p>
+							<AvatarConfirmados modelo={1} />
 						</div>
 					</CardContent>
 					<CardFooter>
@@ -107,6 +109,7 @@ export default function Confirmado() {
 							<p className="font-bold text-xl">Pagamento Confirmado!</p>
 							<p>Sua presença e pagamento foram confirmados.</p>
 							<p>Te espero no KArraiá, {confirmadoData?.display_name}!</p>
+							<AvatarConfirmados modelo={3} />
 						</div>
 					</CardContent>
 					<CardFooter>

@@ -16,6 +16,11 @@ const nextConfig = {
 		SENTRY_DSN: process.env.SENTRY_DSN,
 		GOOGLE_GA_ID: process.env.GOOGLE_GA_ID,
 	},
+	logging: {
+		fetches: {
+			fullUrl: true,
+		},
+	},
 	reactStrictMode: true,
 	images: {
 		remotePatterns: [

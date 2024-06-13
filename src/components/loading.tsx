@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import ReactLoading from 'react-loading'
 
 export default function Loading() {
-	const [loadingText, setLoadingText] = useState('carregando')
+	const [loadingText, setLoadingText] = useState('Carregando')
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -13,7 +13,7 @@ export default function Loading() {
 				if (dotCount < 3) {
 					return `${prev}.`
 				}
-				return 'carregando'
+				return 'Carregando'
 			})
 		}, 500)
 
@@ -22,8 +22,8 @@ export default function Loading() {
 
 	return (
 		<div className="flex h-screen w-screen flex-col items-center justify-center bg-fj bg-no-repeat">
-			<ReactLoading type="bubbles" color="black" height={100} width={100} />
-			<h1 className="text-xl">{loadingText}</h1>
+			<ReactLoading type="bubbles" color="#c83e73" height={100} width={100} />
+			<h1 className="text-[#c83e73] text-xl">{loadingText}</h1>
 		</div>
 	)
 }

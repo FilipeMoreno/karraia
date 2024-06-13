@@ -9,8 +9,8 @@ import { get, ref } from 'firebase/database'
 import { CheckCircle2Icon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { FaArrowRight } from 'react-icons/fa'
-import { FaPix } from 'react-icons/fa6'
+import { FaArrowRight, FaCheckCircle } from 'react-icons/fa'
+import { FaCopy, FaPix } from 'react-icons/fa6'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
 import { toast } from 'sonner'
 import AvatarConfirmados from '../components/avatar-confirmados'
@@ -99,7 +99,8 @@ export default function Confirmado() {
 						onClick={() => route.push('/confirmar/pago')}
 						className="w-full"
 					>
-						Já paguei <FaArrowRight className="mr-2" />
+						<FaCheckCircle className="mr-2" />
+						Já paguei
 					</Button>
 					<Button className="w-full" onClick={logout} variant={'destructive'}>
 						<PiSignOutBold className="mr-2" />

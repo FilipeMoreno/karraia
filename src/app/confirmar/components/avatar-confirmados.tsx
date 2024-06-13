@@ -52,7 +52,11 @@ export default function AvatarConfirmados({ modelo }: { modelo: number }) {
 		<>
 			{confirmados.length > 0 && (
 				<div className="flex w-full flex-col items-center justify-center gap-2 rounded-lg bg-zinc-100 p-4 lg:flex-row">
-					{modelo === 1 ? <p>Você e mais </p> : null}
+					{modelo === 1 ? (
+						<p>Você e mais </p>
+					) : modelo === 2 ? null : (
+						<p>Você e mais</p>
+					)}
 					<div className="-space-x-3 flex *:ring *:ring-white">
 						{displayedConfirmados.map((confirmado) => (
 							<Avatar key={confirmado.email}>
@@ -64,14 +68,22 @@ export default function AvatarConfirmados({ modelo }: { modelo: number }) {
 						))}
 						{extraCount > 0 && (
 							<Avatar key="extra">
-								<AvatarFallback>+{extraCount}</AvatarFallback>
+								{modelo === 1 ? (
+									<AvatarFallback>+{extraCount - 1}</AvatarFallback>
+								) : modelo === 2 ? (
+									<AvatarFallback>+{extraCount}</AvatarFallback>
+								) : (
+									<AvatarFallback>+{extraCount - 1}</AvatarFallback>
+								)}
 							</Avatar>
 						)}
 					</div>
 					{modelo === 1 ? (
 						<p>já confirmam presença!</p>
-					) : (
+					) : modelo === 2 ? (
 						<p>já confirmaram presença! Vai ficar de fora?</p>
+					) : (
+						<p>estão confirmados!</p>
 					)}
 				</div>
 			)}

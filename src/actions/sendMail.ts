@@ -68,12 +68,12 @@ const templateConfirmacao = `
             <p>Sua presença e pagamento foram confirmados no KArraiá! 🥳</p>
             <p>Não esqueça as informações principais:</p>
             <p>📅 <strong>29/06/2024</strong></p>
-            <p>📍 <strong>Recanto Fabiana</strong> (Avenida Alcebíades de Paula Neto, 31 - Jardom Oriental - Maringá/PR)</p>
+            <p>📍 <strong>Recanto Fabiana</strong> (Avenida Alcebíades de Paula Neto, 31 - Jardim Oriental - Maringá/PR)</p>
             <p>⏰ <strong>18h às 00h</strong></p>
             <p>Nos vemos lá! 😘</p>
         </div>
         <div class="footer">
-            <p>Estamos ansiosos para celebrar com você!</p>
+            <p>KArraiá</p>
         </div>
     </div>
 </body>
@@ -182,7 +182,7 @@ const templatePagamento = `
             </div>
         </div>
         <div class="footer">
-            <p>Estamos ansiosos para celebrar com você!</p>
+            <p>KArraiá</p>
         </div>
     </div>
 </body>
