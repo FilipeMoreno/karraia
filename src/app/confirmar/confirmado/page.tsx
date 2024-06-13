@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import router from 'next/router'
 import { useEffect } from 'react'
 import { FaCheckCircle } from 'react-icons/fa'
+import { FaPix } from 'react-icons/fa6'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
 import { toast } from 'sonner'
 import AvatarConfirmados from '../components/avatar-confirmados'
@@ -97,7 +98,7 @@ export default function Confirmado() {
 
 							<Button onClick={copyToClipboard} className="mb-4 w-[60%]">
 								Copiar código
-								<FaCheckCircle className="mr-1 ml-1.5" color="#38beb0" />
+								<FaPix className="mr-1 ml-1.5" color="#38beb0" />
 								<b className="text-[#38beb0]">PIX</b>
 							</Button>
 						</div>
