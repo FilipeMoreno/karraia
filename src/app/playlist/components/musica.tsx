@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { CardContent } from '@/components/ui/card'
-import { AuthContext } from '@/context/AuthContext'
+import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
 import { get, ref, runTransaction, set } from 'firebase/database'
 import Image from 'next/image'
@@ -29,7 +29,7 @@ const PlaylistMusicaComponent: React.FC<PlaylistMusicaComponentProps> = ({
 	const [likes, setLikes] = useState(total_likes)
 	const [dislikes, setDislikes] = useState(total_deslikes)
 
-	const userAuth = AuthContext()
+	const { userAuth } = userAuthContext()
 
 	const checkIfUserHasVoted = async (uid: string) => {
 		const voteRef = ref(database, `votes/${id}/${uid}`)
