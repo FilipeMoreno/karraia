@@ -47,15 +47,15 @@ export default function PlaylistIndex() {
 		}
 	}
 
-	// if (!userAuth) {
-	// 	return <PlaylistLogin />
-	// }
+	if (!userAuth) {
+		return <PlaylistLogin />
+	}
 
 	return (
 		<>
 			<main className="flex min-h-screen flex-col items-center gap-4 p-4">
 				<LogoComponent />
-				<Card className="w-full lg:w-[60%]">
+				<Card className="w-full">
 					<CardHeader>
 						<CardTitle>Tocando agora</CardTitle>
 					</CardHeader>

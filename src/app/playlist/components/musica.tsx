@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button'
 import { CardContent } from '@/components/ui/card'
 import { database } from '@/lib/firebaseService'
-import { child, get, ref, update } from 'firebase/database'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
+import { get, ref, remove, runTransaction, set } from 'firebase/database'
 import Image from 'next/image'
-import { useState } from 'react'
-import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6'
+import { useEffect, useState } from 'react'
+import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa'
 
 interface PlaylistMusicaComponentProps {
 	id: string
@@ -15,78 +16,105 @@ interface PlaylistMusicaComponentProps {
 	onEnd?: () => void
 }
 
-export default function PlaylistMusicaComponent({
+const PlaylistMusicaComponent: React.FC<PlaylistMusicaComponentProps> = ({
 	id,
 	musica,
 	imagem,
 	total_likes,
 	total_deslikes,
 	onEnd,
-}: PlaylistMusicaComponentProps) {
-	const [hasVoted, setHasVoted] = useState<boolean>(false)
+}) => {
+	const [user, setUser] = useState(null)
+	const [hasVoted, setHasVoted] = useState(false)
+	const [likes, setLikes] = useState(total_likes)
+	const [dislikes, setDislikes] = useState(total_deslikes)
 
-	const handleVote = async (type: 'like' | 'dislike') => {
-		if (!hasVoted) {
-			const musicRef = ref(database, `musicas/${id}`)
-			const snapshot = await get(child(musicRef, '/'))
-			const data = snapshot.val()
-			const updates: any = {}
-			if (type === 'like') {
-				updates.likes = data.likes + 1
+	useEffect(() => {
+		const auth = getAuth()
+		const unsubscribe = onAuthStateChanged(auth, (user) => {
+			if (user) {
+				setUser(user)
+				checkIfUserHasVoted(user.uid)
 			} else {
-				updates.dislikes = data.dislikes + 1
+				setUser(null)
+				setHasVoted(false)
 			}
-			await update(musicRef, updates)
+		})
+
+		return () => unsubscribe()
+	}, [])
+
+	const checkIfUserHasVoted = async (uid: string) => {
+		const voteRef = ref(database, `votes/${id}/${uid}`)
+		const snapshot = await get(voteRef)
+		if (snapshot.exists()) {
 			setHasVoted(true)
 		}
 	}
 
-	const opts = {
-		height: '390',
-		width: '640',
-		playerVars: {
-			autoplay: 1,
-		},
-	}
+	const handleVote = async (type: 'like' | 'dislike') => {
+		if (!user) return
 
-	const handleEnd = () => {
-		if (onEnd) {
-			onEnd()
+		const voteRef = ref(database, `votes/${id}/${user.uid}`)
+		const totalLikesRef = ref(database, `musicas/${id}/like`)
+		const totalDislikesRef = ref(database, `musicas/${id}/deslike`)
+
+		await set(voteRef, type)
+		setHasVoted(true)
+
+		if (type === 'like') {
+			await runTransaction(
+				totalLikesRef,
+				(currentLikes) => (currentLikes || 0) + 1,
+			)
+			setLikes((prevLikes) => prevLikes + 1)
+		} else {
+			await runTransaction(
+				totalDislikesRef,
+				(currentDislikes) => (currentDislikes || 0) + 1,
+			)
+			setDislikes((prevDislikes) => prevDislikes + 1)
 		}
 	}
 
 	return (
 		<CardContent className="flex flex-col gap-2">
-			<div className="flex flex-col justify-between gap-3 rounded-lg bg-zinc-100 p-4">
-				<div className="flex flex-row items-center justify-between gap-3">
-					<div className="flex flex-row items-center gap-3">
-						<Image src={imagem} width={100} height={100} alt="Album" />
-						<div>
-							<h1>{musica}</h1>
-						</div>
+			<div className="flex flex-row items-center justify-between gap-3 rounded-lg bg-zinc-100 p-4">
+				<div className="flex flex-row items-center gap-3">
+					<Image
+						src={imagem}
+						alt={musica}
+						width={64}
+						height={64}
+						className="rounded-lg"
+					/>
+					<div>
+						<h1>{musica}</h1>
 					</div>
-					<div className="flex flex-row gap-2">
-						<Button
-							onClick={() => handleVote('like')}
-							disabled={hasVoted}
-							size={'sm'}
-							className="flex gap-1"
-						>
-							<FaThumbsUp />
-							<p>{total_likes}</p>
-						</Button>
-						<Button
-							onClick={() => handleVote('dislike')}
-							disabled={hasVoted}
-							size={'sm'}
-							className="flex gap-1"
-						>
-							<FaThumbsDown />
-							<p>{total_deslikes}</p>
-						</Button>
-					</div>
+				</div>
+				<div className="flex flex-row gap-2">
+					<Button
+						onClick={() => handleVote('like')}
+						disabled={hasVoted}
+						size="sm"
+						className="flex gap-1"
+					>
+						<FaThumbsUp />
+						<p>{likes}</p>
+					</Button>
+					<Button
+						onClick={() => handleVote('dislike')}
+						disabled={hasVoted}
+						size="sm"
+						className="flex gap-1"
+					>
+						<FaThumbsDown />
+						<p>{dislikes}</p>
+					</Button>
 				</div>
 			</div>
 		</CardContent>
 	)
 }
+
+export default PlaylistMusicaComponent

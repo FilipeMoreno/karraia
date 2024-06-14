@@ -34,7 +34,7 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 		if (!hasVoted) {
 			try {
 				const musicRef = ref(database, `musicas/${id}`)
-				const voteRef = ref(database, `votos/${userAuth.uid}/${id}`)
+				const voteRef = ref(database, `votos/${userAuth?.uid}/${id}`)
 
 				await runTransaction(musicRef, async (currentData) => {
 					if (!currentData) {
@@ -52,26 +52,13 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 					}
 
 					await update(musicRef, updates)
-					await set(voteRef, type) // Registra o voto do usuário
+					await set(voteRef, type)
 					setHasVoted(true)
 					return currentData
 				})
 			} catch (error) {
 				console.error('Erro ao processar voto:', error)
 			}
-		}
-	}
-
-	const handleRemove = async () => {
-		try {
-			const musicRef = ref(database, `musicas/${id}`)
-			await remove(musicRef)
-			console.log('Música removida com sucesso!')
-			if (onEnd) {
-				onEnd()
-			}
-		} catch (error) {
-			console.error('Erro ao remover música:', error)
 		}
 	}
 
@@ -84,25 +71,29 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 	return (
 		<CardContent className="flex flex-col gap-2">
 			<div className="flex flex-col justify-between gap-3 rounded-lg bg-zinc-100 p-4">
-				<div className="flex flex-row items-center justify-between gap-3">
-					<div className="flex flex-row items-center gap-3">
-						<ReactPlayer
-							url={url}
-							width="300px"
-							height="200px"
-							playing
-							onEnded={handleEnd}
-						/>
-						<div>
-							<h1>{musica}</h1>
+				<div className="flex flex-col items-center justify-between gap-3 lg:flex-row">
+					<div className="flex w-full flex-col items-center gap-3 lg:flex-row">
+						<div className="flex items-center justify-center">
+							<ReactPlayer
+								url={url}
+								className="h-auto w-full max-w-md lg:max-w-full"
+								playing
+								onEnded={handleEnd}
+								width="100%"
+								height="100%"
+							/>
+						</div>
+
+						<div className="w-full">
+							<h1 className="font-bold text-lg">{musica}</h1>
 						</div>
 					</div>
-					<div className="flex flex-row gap-2">
+					<div className="flex w-full flex-row justify-center gap-2 lg:justify-end">
 						<Button
 							onClick={() => handleVote('like')}
 							disabled={hasVoted}
 							size="sm"
-							className="flex gap-1"
+							className="flex w-full gap-1 lg:w-auto"
 						>
 							<FaThumbsUp />
 							<p>{total_likes}</p>
@@ -111,13 +102,10 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 							onClick={() => handleVote('dislike')}
 							disabled={hasVoted}
 							size="sm"
-							className="flex gap-1"
+							className="flex w-full gap-1 lg:w-auto"
 						>
 							<FaThumbsDown />
 							<p>{total_deslikes}</p>
-						</Button>
-						<Button onClick={handleRemove} size="sm" className="flex gap-1">
-							Remover Música
 						</Button>
 					</div>
 				</div>

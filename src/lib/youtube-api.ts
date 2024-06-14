@@ -5,9 +5,9 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 		/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]+)/,
 	)
 	const videoId = videoIdMatch ? videoIdMatch[1] : null
+
 	if (!videoId) {
-		console.error('Invalid YouTube URL')
-		return null
+		throw new Error('ID do vídeo não encontrado na URL.')
 	}
 
 	const apiKey = process.env.YOUTUBE_API_KEY
@@ -17,14 +17,16 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 	try {
 		const response = await fetch(url)
 		const data = await response.json()
+
 		if (data.items.length === 0) {
-			console.error('No data found for this video ID')
-			return null
+			throw new Error('Vídeo não encontrado.')
 		}
+
 		const { title, thumbnails } = data.items[0].snippet
 		return {
 			title,
 			thumbnail: thumbnails.default.url,
+			url: `https://www.youtube.com/watch?v=${videoId}`,
 		}
 	} catch (error) {
 		console.error('Error fetching YouTube data', error)
