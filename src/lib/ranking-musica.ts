@@ -4,7 +4,10 @@ const calculateRank = (
 	addedAt: number,
 ): number => {
 	const ageInHours = (Date.now() - addedAt) / 3600000
-	return likes - dislikes - ageInHours
+	const popularity = (likes + 1) / (likes + dislikes + 2)
+	const freshnessFactor = Math.exp(-ageInHours / 1)
+
+	return popularity * 100 + freshnessFactor * 50 - ageInHours
 }
 
 export const rankMusicas = (musicas: any[]): any[] => {

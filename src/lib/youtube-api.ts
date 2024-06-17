@@ -11,7 +11,7 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 	}
 
 	const apiKey = process.env.YOUTUBE_API_KEY
-	console.log('apiKey', apiKey)
+
 	const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet&key=${apiKey}`
 
 	try {

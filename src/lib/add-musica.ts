@@ -43,7 +43,6 @@ export const addMusic = async (url: string, user: any): Promise<boolean> => {
 			addedById: user.uid,
 			addedByName: user.displayName,
 			addedByPhoto: user.photoURL,
-			playing: false,
 		})
 		toast.success('Música adicionada com sucesso!', {
 			description: `Música: ${musicDetails.title}`,

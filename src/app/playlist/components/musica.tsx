@@ -1,73 +1,35 @@
 import { Button } from '@/components/ui/button'
 import { CardContent } from '@/components/ui/card'
-import { userAuthContext } from '@/context/AuthContext'
-import { database } from '@/lib/firebaseService'
-import { get, ref, runTransaction, set } from 'firebase/database'
 import Image from 'next/image'
-import { useState } from 'react'
-import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa'
+import { FaArrowRotateLeft, FaTrash } from 'react-icons/fa6'
+import VotacaoComponent from './votos'
 
 interface PlaylistMusicaComponentProps {
 	id: string
 	musica: string
 	imagem: string
-	total_likes: number
-	total_deslikes: number
 	onEnd?: () => void
+	isAdmin: boolean
+	onRemove?: (id: string) => void
+	tocada?: boolean
+	rank?: number
 }
 
-const PlaylistMusicaComponent: React.FC<PlaylistMusicaComponentProps> = ({
+const PlaylistMusicaComponent = ({
 	id,
 	musica,
 	imagem,
-	total_likes,
-	total_deslikes,
-	onEnd,
-}) => {
-	const [user, setUser] = useState(null)
-	const [hasVoted, setHasVoted] = useState(false)
-	const [likes, setLikes] = useState(total_likes)
-	const [dislikes, setDislikes] = useState(total_deslikes)
-
-	const { userAuth } = userAuthContext()
-
-	const checkIfUserHasVoted = async (uid: string) => {
-		const voteRef = ref(database, `votes/${id}/${uid}`)
-		const snapshot = await get(voteRef)
-		if (snapshot.exists()) {
-			setHasVoted(true)
-		}
-	}
-
-	const handleVote = async (type: 'like' | 'dislike') => {
-		if (!userAuth) return
-
-		const voteRef = ref(database, `votes/${id}/${userAuth?.uid}`)
-		const totalLikesRef = ref(database, `musicas/${id}/like`)
-		const totalDislikesRef = ref(database, `musicas/${id}/deslike`)
-
-		await set(voteRef, type)
-		setHasVoted(true)
-
-		if (type === 'like') {
-			await runTransaction(
-				totalLikesRef,
-				(currentLikes) => (currentLikes || 0) + 1,
-			)
-			setLikes((prevLikes) => prevLikes + 1)
-		} else {
-			await runTransaction(
-				totalDislikesRef,
-				(currentDislikes) => (currentDislikes || 0) + 1,
-			)
-			setDislikes((prevDislikes) => prevDislikes + 1)
-		}
-	}
-
+	isAdmin,
+	onRemove,
+	tocada,
+	rank,
+}: PlaylistMusicaComponentProps) => {
 	return (
 		<CardContent className="flex flex-col gap-2">
 			<div className="flex flex-row items-center justify-between gap-3 rounded-lg bg-zinc-100 p-4">
 				<div className="flex flex-row items-center gap-3">
+					{rank && <span>#{rank}</span>}
+
 					<Image
 						src={imagem}
 						alt={musica}
@@ -76,28 +38,22 @@ const PlaylistMusicaComponent: React.FC<PlaylistMusicaComponentProps> = ({
 						className="rounded-lg"
 					/>
 					<div>
-						<h1>{musica}</h1>
+						<h1 className={tocada ? 'text-zinc-300' : ''}>{musica}</h1>
+						{tocada && <p className="text-zinc-300">Tocada</p>}
 					</div>
 				</div>
-				<div className="flex flex-row gap-2">
-					<Button
-						onClick={() => handleVote('like')}
-						disabled={hasVoted}
-						size="sm"
-						className="flex gap-1"
-					>
-						<FaThumbsUp />
-						<p>{likes}</p>
-					</Button>
-					<Button
-						onClick={() => handleVote('dislike')}
-						disabled={hasVoted}
-						size="sm"
-						className="flex gap-1"
-					>
-						<FaThumbsDown />
-						<p>{dislikes}</p>
-					</Button>
+				<div className="flex gap-2">
+					{tocada && (
+						<Button size="sm" onClick={() => alert('Desenvolvimento')}>
+							<FaArrowRotateLeft />
+						</Button>
+					)}
+					<VotacaoComponent musicId={id} />
+					{isAdmin && (
+						<Button onClick={() => onRemove(id)} size="sm">
+							<FaTrash />
+						</Button>
+					)}
 				</div>
 			</div>
 		</CardContent>

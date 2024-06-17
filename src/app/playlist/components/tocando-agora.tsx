@@ -1,67 +1,28 @@
-import { Button } from '@/components/ui/button'
 import { CardContent } from '@/components/ui/card'
-import { userAuthContext } from '@/context/AuthContext'
 
-import { database } from '@/lib/firebaseService'
-import { ref, remove, runTransaction, set, update } from 'firebase/database'
-import { useState } from 'react'
-import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa'
+import { Button } from '@/components/ui/button'
+import { FaTrash } from 'react-icons/fa6'
 import ReactPlayer from 'react-player'
+import VotacaoComponent from './votos'
 
 interface PlaylistMusicaComponentProps {
 	id: string
 	musica: string
 	imagem: string
 	url: string
-	total_likes: number
-	total_deslikes: number
 	onEnd?: () => void
+	isAdmin: boolean
+	onRemove?: (id: string) => void
 }
 
 const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 	id,
 	musica,
 	url,
-	total_likes,
-	total_deslikes,
+	isAdmin,
 	onEnd,
+	onRemove,
 }) => {
-	const [hasVoted, setHasVoted] = useState<boolean>(false)
-	const MAX_DISLIKES = 5
-	const { userAuth } = userAuthContext()
-
-	const handleVote = async (type: 'like' | 'dislike') => {
-		if (!hasVoted) {
-			try {
-				const musicRef = ref(database, `musicas/${id}`)
-				const voteRef = ref(database, `votos/${userAuth?.uid}/${id}`)
-
-				await runTransaction(musicRef, async (currentData) => {
-					if (!currentData) {
-						throw Error('Música não encontrada.')
-					}
-
-					const updates: any = {}
-					if (type === 'like') {
-						updates.likes = (currentData.likes || 0) + 1
-					} else {
-						updates.dislikes = (currentData.dislikes || 0) + 1
-						if (updates.dislikes >= MAX_DISLIKES) {
-							handleEnd()
-						}
-					}
-
-					await update(musicRef, updates)
-					await set(voteRef, type)
-					setHasVoted(true)
-					return currentData
-				})
-			} catch (error) {
-				console.error('Erro ao processar voto:', error)
-			}
-		}
-	}
-
 	const handleEnd = () => {
 		if (onEnd) {
 			onEnd()
@@ -81,6 +42,7 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 								onEnded={handleEnd}
 								width="100%"
 								height="100%"
+								controls={true}
 							/>
 						</div>
 
@@ -88,25 +50,13 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 							<h1 className="font-bold text-lg">{musica}</h1>
 						</div>
 					</div>
-					<div className="flex w-full flex-row justify-center gap-2 lg:justify-end">
-						<Button
-							onClick={() => handleVote('like')}
-							disabled={hasVoted}
-							size="sm"
-							className="flex w-full gap-1 lg:w-auto"
-						>
-							<FaThumbsUp />
-							<p>{total_likes}</p>
-						</Button>
-						<Button
-							onClick={() => handleVote('dislike')}
-							disabled={hasVoted}
-							size="sm"
-							className="flex w-full gap-1 lg:w-auto"
-						>
-							<FaThumbsDown />
-							<p>{total_deslikes}</p>
-						</Button>
+					<div className="flex gap-2">
+						<VotacaoComponent musicId={id} />
+						{isAdmin && (
+							<Button onClick={() => onRemove(id)} size="sm">
+								<FaTrash />
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>

@@ -22,7 +22,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { userAuthContext } from '@/context/AuthContext'
 import { addMusic } from '@/lib/add-musica'
+import { database } from '@/lib/firebaseService'
+import { ref } from 'firebase/database'
 import { useEffect, useState } from 'react'
+import { get } from 'react-hook-form'
 import { FaPlus } from 'react-icons/fa6'
 import { useMediaQuery } from 'usehooks-ts'
 
@@ -90,26 +93,30 @@ const AddMusicComponent: React.FC = () => {
 	return (
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerTrigger asChild>
-				<Button variant="outline">Adicionar Música</Button>
+				<Button>Adicionar Música</Button>
 			</DrawerTrigger>
-			<DrawerContent>
+			<DrawerContent className="w-full p-3">
 				<DrawerHeader className="text-left">
 					<DrawerTitle>Adicionar Música</DrawerTitle>
 					<DrawerDescription>
 						Insira o link da música do YouTube abaixo.
 					</DrawerDescription>
 				</DrawerHeader>
-				<Input
-					type="text"
-					placeholder="Link do YouTube"
-					value={url}
-					onChange={(e) => setUrl(e.target.value)}
-				/>
-				{error && <p className="text-red-500">{error}</p>}
-				<Button onClick={handleAddMusic}>Adicionar música</Button>
-				<DrawerFooter className="pt-2">
+				<div className="flex flex-col gap-2">
+					<Input
+						type="text"
+						placeholder="Link do YouTube"
+						value={url}
+						onChange={(e) => setUrl(e.target.value)}
+					/>
+					{error && <p className="text-red-500">{error}</p>}
+					<Button onClick={handleAddMusic}>Adicionar música</Button>
+				</div>
+				<DrawerFooter>
 					<DrawerClose asChild onClick={handleCloseModal}>
-						<Button variant="outline">Cancelar</Button>
+						<Button variant="outline" className="w-full">
+							Cancelar
+						</Button>
 					</DrawerClose>
 				</DrawerFooter>
 			</DrawerContent>
