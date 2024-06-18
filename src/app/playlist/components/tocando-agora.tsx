@@ -70,7 +70,7 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 							{isAdmin && (
 								<Button
 									variant={'destructive'}
-									onClick={() => onRemove(id)}
+									onClick={() => onRemove?.(id)}
 									size="sm"
 								>
 									<FaTrash />

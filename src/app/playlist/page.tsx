@@ -249,7 +249,7 @@ export default function PlaylistIndex() {
 		toast.success('Música reiniciada com sucesso!')
 	}
 
-	const handleSearchChange = (event) => {
+	const handleSearchChange = (event: any) => {
 		setSearchTerm(event.target.value)
 	}
 

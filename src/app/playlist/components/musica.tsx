@@ -65,7 +65,7 @@ const PlaylistMusicaComponent = ({
 						</Badge>
 					)}
 					{tocada && (
-						<Button size="sm" onClick={() => onReset(id)}>
+						<Button size="sm" onClick={() => onReset?.(id)}>
 							<FaArrowRotateLeft />
 						</Button>
 					)}
@@ -82,14 +82,14 @@ const PlaylistMusicaComponent = ({
 								<>
 									<Button
 										variant={'destructive'}
-										onClick={() => onRemove(id)}
+										onClick={() => onRemove?.(id)}
 										size="sm"
 									>
 										<FaTrash />
 									</Button>
 									<Button
 										variant={'destructive'}
-										onClick={() => onForcePlay(id)}
+										onClick={() => onForcePlay?.(id)}
 										size="sm"
 									>
 										<FaForward />

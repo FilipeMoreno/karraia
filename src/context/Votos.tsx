@@ -3,14 +3,28 @@ import { get, ref, remove, runTransaction, set } from 'firebase/database'
 import { createContext, useContext, useState } from 'react'
 import { toast } from 'sonner'
 
-const VoteContext = createContext()
+interface VoteData {
+	likes: number
+	dislikes: number
+	[userId: string]: string | number | null
+}
+
+export interface VoteContextType {
+	votes: Record<string, VoteData>
+	fetchVotes: (musicId: string) => Promise<VoteData>
+	updateVote: (musicId: string, userId: string, vote: string) => Promise<void>
+}
+
+const VoteContext = createContext<VoteContextType | undefined>(undefined)
 
 export const useVoteContext = () => useContext(VoteContext)
 
-export const VoteProvider = ({ children }) => {
-	const [votes, setVotes] = useState({})
+import type { ReactNode } from 'react'
 
-	const fetchVotes = async (musicId: any) => {
+export const VoteProvider = ({ children }: { children: ReactNode }) => {
+	const [votes, setVotes] = useState<Record<string, VoteData>>({})
+
+	const fetchVotes = async (musicId: string): Promise<VoteData> => {
 		const voteRef = ref(database, `votos/${musicId}`)
 		const snapshot = await get(voteRef)
 		const votesData = snapshot.val() || {}
@@ -19,9 +33,10 @@ export const VoteProvider = ({ children }) => {
 		const musicSnapshot = await get(musicRef)
 		const musicData = musicSnapshot.val() || {}
 
-		const combinedData = {
+		const combinedData: VoteData = {
+			likes: musicData.likes || 0,
+			dislikes: musicData.dislikes || 0,
 			...votesData,
-			...musicData,
 		}
 
 		setVotes((prevVotes) => {
@@ -39,10 +54,10 @@ export const VoteProvider = ({ children }) => {
 	}
 
 	const updateVote = async (
-		musicId: string | number,
-		userId: string | number,
-		type: unknown,
-	) => {
+		musicId: string,
+		userId: string,
+		type: string,
+	): Promise<void> => {
 		const voteRef = ref(database, `votos/${musicId}/${userId}`)
 		const totalLikesRef = ref(database, `musicas/${musicId}/likes`)
 		const totalDislikesRef = ref(database, `musicas/${musicId}/dislikes`)
@@ -92,7 +107,6 @@ export const VoteProvider = ({ children }) => {
 				}
 			}
 
-			// Atualizar diretamente o estado dos votos ao invés de chamar fetchVotes
 			setVotes((prevVotes) => ({
 				...prevVotes,
 				[musicId]: {
@@ -108,7 +122,7 @@ export const VoteProvider = ({ children }) => {
 							: prevVotes[musicId].dislikes,
 				},
 			}))
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Erro ao atualizar votos', error)
 			toast.error('Erro ao atualizar votos', {
 				description: `Erro: ${error.message}`,

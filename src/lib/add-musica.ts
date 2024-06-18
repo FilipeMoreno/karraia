@@ -1,13 +1,7 @@
 import { database } from '@/lib/firebaseService'
-import { getYouTubeVideoData } from '@/lib/youtube-api' // ajuste o caminho conforme necessário
+import { getYouTubeVideoData } from '@/lib/youtube-api'
 import { get, ref, set } from 'firebase/database'
 import { toast } from 'sonner'
-
-interface MusicDetails {
-	title: string
-	thumbnail: string
-	url: string
-}
 
 export const addMusic = async (url: string, user: any): Promise<boolean> => {
 	try {

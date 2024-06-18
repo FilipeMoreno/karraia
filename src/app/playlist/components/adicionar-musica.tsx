@@ -20,9 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { userAuthContext } from '@/context/AuthContext'
 import { addMusic } from '@/lib/add-musica'
-import { database } from '@/lib/firebaseService'
-import { type MusicDetails, getYouTubeVideoData } from '@/lib/youtube-api' // ajuste o caminho conforme necessário
-import { ref } from 'firebase/database'
+import { getYouTubeVideoData } from '@/lib/youtube-api'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
@@ -34,7 +32,7 @@ const AddMusicComponent: React.FC = () => {
 	const isDesktop = useMediaQuery('(min-width: 768px)')
 	const [open, setOpen] = useState(false)
 	const { userAuth } = userAuthContext()
-	const [musicDetails, setMusicDetails] = useState<MusicDetails | null>(null)
+	const [musicDetails, setMusicDetails] = useState<any>(null)
 
 	useEffect(() => {
 		resetForm()

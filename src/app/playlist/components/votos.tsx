@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { userAuthContext } from '@/context/AuthContext'
-import { useVoteContext } from '@/context/Votos'
+import { type VoteContextType, useVoteContext } from '@/context/Votos'
 import { useEffect, useState } from 'react'
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa6'
 
-const VotacaoComponent = ({ musicId }) => {
-	const { userAuth } = userAuthContext()
-	const { votes, fetchVotes, updateVote } = useVoteContext()
-	const [userVote, setUserVote] = useState(null)
+const VotacaoComponent = ({ musicId }: { musicId: string }) => {
+	const { userAuth } = userAuthContext() || {}
+	const { votes, fetchVotes, updateVote } = useVoteContext() as VoteContextType
+	const [userVote, setUserVote] = useState<string | null>(null)
 	const [likes, setLikes] = useState(0)
 	const [dislikes, setDislikes] = useState(0)
 	const [isVoting, setIsVoting] = useState(false)
@@ -19,14 +19,16 @@ const VotacaoComponent = ({ musicId }) => {
 				if (votesData) {
 					setLikes(votesData.likes || 0)
 					setDislikes(votesData.dislikes || 0)
-					setUserVote(votesData[userAuth.uid] || null)
+					if (userAuth?.uid) {
+						setUserVote(votesData[userAuth.uid]?.toString() || null)
+					}
 				}
 			} catch (error) {
 				console.error('Erro ao buscar votos:', error)
 			}
 		}
 
-		if (userAuth) {
+		if (userAuth?.uid) {
 			fetchAndSetVotes()
 		}
 	}, [userAuth, musicId, fetchVotes])
@@ -36,12 +38,14 @@ const VotacaoComponent = ({ musicId }) => {
 		if (musicVotes) {
 			setLikes(musicVotes.likes || 0)
 			setDislikes(musicVotes.dislikes || 0)
-			setUserVote(musicVotes[userAuth?.uid] || null)
+			if (userAuth?.uid) {
+				setUserVote(musicVotes[userAuth.uid]?.toString() || null)
+			}
 		}
 	}, [votes, musicId, userAuth?.uid])
 
-	const handleVote = async (type) => {
-		if (!userAuth || isVoting) return
+	const handleVote = async (type: string) => {
+		if (!userAuth?.uid || isVoting) return
 
 		setIsVoting(true)
 
