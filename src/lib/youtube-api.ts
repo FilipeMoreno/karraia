@@ -23,9 +23,18 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 		}
 
 		const { title, thumbnails } = data.items[0].snippet
+
+		// Tenta obter a thumbnail de maior qualidade disponível
+		const thumbnailUrl =
+			thumbnails.maxres?.url ||
+			thumbnails.standard?.url ||
+			thumbnails.high?.url ||
+			thumbnails.medium?.url ||
+			thumbnails.default.url
+
 		return {
 			title,
-			thumbnail: thumbnails.default.url,
+			thumbnail: thumbnailUrl,
 			url: `https://www.youtube.com/watch?v=${videoId}`,
 		}
 	} catch (error) {

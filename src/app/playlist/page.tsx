@@ -15,22 +15,28 @@ import { VoteProvider } from '@/context/Votos'
 import { database } from '@/lib/firebaseService'
 import { rankMusicas } from '@/lib/ranking-musica'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { get, onValue, ref, remove, update } from 'firebase/database'
+import { get, onValue, ref, remove, set, update } from 'firebase/database'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { FaExclamationTriangle, FaForward } from 'react-icons/fa'
+import { FaCheck } from 'react-icons/fa6'
 import { toast } from 'sonner'
 import AddMusicComponent from './components/adicionar-musica'
 import PlaylistLogin from './components/login'
 import PlaylistMusicaComponent from './components/musica'
-import musica from './components/musica'
 import PlaylistTocandoAgora from './components/tocando-agora'
 
 export default function PlaylistIndex() {
 	const { userAuth } = userAuthContext()
 	const [musicas, setMusicas] = useState<any[]>([])
+	const [rankedUpcomingSongs, setRankedUpcomingSongs] = useState<any[]>([])
 	const [currentMusic, setCurrentMusic] = useState<any | null>(null)
 	const [playlistConfig, setPlaylistConfig] = useState<any | null>(null)
 	const [isAdmin, setIsAdmin] = useState(false)
+	const [searchTerm, setSearchTerm] = useState('')
+	const [skipVotes, setSkipVotes] = useState(0)
+	const [userSkipVote, setUserSkipVote] = useState(false)
+	const requiredVotes = 2
 
 	useEffect(() => {
 		const auth = getAuth()
@@ -38,14 +44,15 @@ export default function PlaylistIndex() {
 			if (user) {
 				const uid = user.uid
 				const adminRef = ref(database, `admins/${uid}`)
-				get(adminRef).then((snapshot: { exists: () => any }) => {
+				get(adminRef).then((snapshot) => {
 					if (snapshot.exists()) {
 						setIsAdmin(true)
 					}
 				})
 			}
 		})
-	})
+		return () => unsubscribe()
+	}, [])
 
 	useEffect(() => {
 		const musicRef = ref(database, 'musicas')
@@ -74,13 +81,104 @@ export default function PlaylistIndex() {
 		})
 	}, [musicas])
 
-	const handleSkipCurrentMusic = () => {
-		if (rankedUpcomingSongs.length > 0) {
-			const nextMusic = rankedUpcomingSongs[0]
-			setCurrentMusic(nextMusic)
-			setMusicas((prevMusicas) =>
-				prevMusicas.filter((musica) => musica.id !== nextMusic.id),
+	useEffect(() => {
+		const upcomingSongs = rankMusicas(
+			musicas.filter(
+				(musica) => !musica.tocada && musica.id !== currentMusic?.id,
+			),
+		)
+		setRankedUpcomingSongs(upcomingSongs)
+
+		if (!currentMusic && upcomingSongs.length > 0) {
+			const nextMusic = upcomingSongs[0]
+			update(ref(database, 'current_music'), { id: nextMusic.id })
+		}
+	}, [musicas, currentMusic])
+
+	const handleVoteToSkip = async () => {
+		if (!userAuth || !currentMusic) return
+
+		const userId = userAuth.uid
+		const skipVoteRef = ref(database, `skip_votes/${currentMusic.id}/${userId}`)
+		const skipVotesRef = ref(database, `skip_votes/${currentMusic.id}`)
+
+		if (userSkipVote) {
+			await remove(skipVoteRef)
+			setUserSkipVote(false)
+		} else {
+			await set(skipVoteRef, { voted: true })
+			setUserSkipVote(true)
+		}
+
+		onValue(skipVotesRef, (snapshot) => {
+			const votes = snapshot.val() ? Object.keys(snapshot.val()).length : 0
+			setSkipVotes(votes)
+
+			if (votes >= requiredVotes) {
+				handleSkipCurrentMusic()
+				remove(skipVotesRef)
+			}
+		})
+	}
+
+	useEffect(() => {
+		if (currentMusic && userAuth) {
+			const userId = userAuth.uid
+			const skipVoteRef = ref(
+				database,
+				`skip_votes/${currentMusic.id}/${userId}`,
 			)
+			const skipVotesRef = ref(database, `skip_votes/${currentMusic.id}`)
+
+			onValue(skipVoteRef, (snapshot) => {
+				setUserSkipVote(snapshot.exists())
+			})
+
+			onValue(skipVotesRef, (snapshot) => {
+				const votes = snapshot.val() ? Object.keys(snapshot.val()).length : 0
+				setSkipVotes(votes)
+			})
+		}
+	}, [currentMusic, userAuth])
+
+	const handleSkipCurrentMusic = async () => {
+		if (rankedUpcomingSongs.length > 1) {
+			const nextMusic = rankedUpcomingSongs.find(
+				(musica) => musica.id !== currentMusic.id,
+			)
+
+			if (nextMusic) {
+				try {
+					await update(ref(database, 'current_music'), { id: nextMusic.id })
+					setCurrentMusic(nextMusic)
+					await atualizarMusicaComoTocada()
+					toast.success('Música pulada com sucesso!', {
+						description: `Tocando agora: ${nextMusic.title}`,
+					})
+					await remove(ref(database, `skip_votes/${currentMusic.id}`))
+					setSkipVotes(0)
+				} catch (error) {
+					toast.error('Erro ao pular música. Tente novamente.', {
+						description: `Erro: ${error}`,
+					})
+					console.error('Error updating current_music:', error)
+				}
+			} else {
+				toast.info('Não há mais músicas na lista.')
+			}
+		} else {
+			toast.info('Não há músicas suficientes para pular.')
+		}
+	}
+
+	const handleForcePlayMusic = async (id: string) => {
+		const music = musicas.find((musica) => musica.id === id)
+		if (music) {
+			await update(ref(database, 'current_music'), { id: music.id })
+			setCurrentMusic(music)
+			toast.success('Música tocando agora!', {
+				description: `${music.title}`,
+			})
 		}
 	}
 
@@ -90,41 +188,73 @@ export default function PlaylistIndex() {
 		toast.success('Música removida com sucesso!')
 	}
 
-	const atualizarMusicaComoTocada = () => {
+	const handleRemoveMusicPlaylist = async (id: string) => {
+		const updatedMusicas = rankedUpcomingSongs.filter(
+			(musica) => musica.id !== id,
+		)
+		setRankedUpcomingSongs(updatedMusicas)
+	}
+
+	const atualizarMusicaComoTocada = async () => {
 		if (currentMusic?.id) {
 			const musicRef = ref(database, `musicas/${currentMusic.id}`)
-			update(musicRef, { tocada: true })
-				.then(() => {
-					console.log('Música atualizada como tocada.')
-				})
-				.catch((error) => {
-					console.error('Erro ao atualizar a música: ', error)
-				})
+			await update(musicRef, { tocada: true })
 		}
 	}
 
-	const handleEndCurrentMusic = () => {
-		atualizarMusicaComoTocada()
+	const handleEndCurrentMusic = async () => {
+		await atualizarMusicaComoTocada()
 
 		if (rankedUpcomingSongs.length > 0) {
-			const nextMusic = rankedUpcomingSongs[0]
-			setCurrentMusic(nextMusic)
-			setMusicas((prevMusicas) => {
-				const nextMusicIndex = prevMusicas.findIndex(
-					(musica) => musica.id === nextMusic.id,
-				)
-				if (nextMusicIndex >= 0) {
-					return [
-						...prevMusicas.slice(0, nextMusicIndex),
-						...prevMusicas.slice(nextMusicIndex + 1),
-					]
-				}
-				return prevMusicas
-			})
+			let nextIndex = 0
+
+			while (rankedUpcomingSongs[nextIndex]?.id === currentMusic?.id) {
+				nextIndex++
+			}
+			const nextMusic = rankedUpcomingSongs[nextIndex]
+
+			if (nextMusic) {
+				await update(ref(database, 'current_music'), { id: nextMusic.id })
+				setCurrentMusic(nextMusic)
+			} else {
+				toast.info('Não há mais músicas na playlist.')
+				await update(ref(database, 'current_music'), { id: null })
+				setCurrentMusic(null)
+			}
 		} else {
 			toast.info('Não há mais músicas na playlist.')
+			await update(ref(database, 'current_music'), { id: null })
+			setCurrentMusic(null)
 		}
 	}
+
+	const handleResetMusic = async (id: string) => {
+		const musicRef = ref(database, `musicas/${id}`)
+		await update(musicRef, { tocada: false, likes: 0, dislikes: 0 })
+
+		const userId = getAuth().currentUser?.uid
+		if (userId) {
+			const voteRef = ref(database, `votos/${id}/${userId}`)
+			await remove(voteRef)
+		}
+
+		const updatedMusicas = musicas.map((musica) =>
+			musica.id === id
+				? { ...musica, tocada: false, likes: 0, dislikes: 0 }
+				: musica,
+		)
+		setMusicas(updatedMusicas)
+
+		toast.success('Música reiniciada com sucesso!')
+	}
+
+	const handleSearchChange = (event) => {
+		setSearchTerm(event.target.value)
+	}
+
+	const filteredMusicas = musicas.filter((musica) =>
+		musica.title.toLowerCase().includes(searchTerm.toLowerCase()),
+	)
 
 	if (!userAuth) {
 		return <PlaylistLogin />
@@ -142,13 +272,20 @@ export default function PlaylistIndex() {
 		)
 	}
 
-	const orderedPlaylist = musicas.sort((a, b) => b.addedAt - a.addedAt)
-	const rankedUpcomingSongs = rankMusicas(musicas.slice())
+	const orderedPlaylist = filteredMusicas.sort((a, b) => {
+		if (a.tocada === b.tocada) {
+			return b.addedAt - a.addedAt
+		}
+		return a.tocada ? 1 : -1
+	})
 
 	return (
 		<VoteProvider>
 			<main className="flex min-h-screen flex-col items-center gap-4 p-4">
 				<LogoComponent />
+				<div className="flex w-full items-center justify-center md:hidden">
+					<AddMusicComponent />
+				</div>
 				{currentMusic && (
 					<Card className="w-full">
 						<CardHeader>
@@ -165,30 +302,101 @@ export default function PlaylistIndex() {
 									isAdmin={isAdmin}
 									onRemove={() => handleRemoveMusic(currentMusic.id)}
 								/>
-								{currentMusic && isAdmin && (
-									<div className="flex items-center justify-end bg-zinc-100 p-4">
-										<Button onClick={handleSkipCurrentMusic}>
-											<FaForward className="mr-2" /> Pular Música
+
+								<div className="flex items-center justify-between bg-zinc-100 p-4">
+									<div className="flex flex-row items-center justify-center gap-2">
+										<Image
+											src={currentMusic.addedByPhoto}
+											height={40}
+											width={40}
+											alt={currentMusic.addedByName}
+											className="rounded-full"
+										/>
+										<div className="flex flex-col">
+											<p className="text-xs">Adicionado por:</p>
+											<p>{currentMusic.addedByName}</p>
+										</div>
+									</div>
+									<div className="flex items-center justify-end gap-4">
+										{isAdmin && (
+											<Button
+												variant={'destructive'}
+												onClick={handleSkipCurrentMusic}
+											>
+												<FaForward className="mr-2" /> Pular Música
+											</Button>
+										)}
+										<Button
+											className={userSkipVote ? 'text-[#7FD7EB]' : ''}
+											onClick={handleVoteToSkip}
+										>
+											{userSkipVote ? (
+												<>
+													<FaCheck className="mr-2" />
+													{` Pular ${skipVotes}/${requiredVotes}`}
+												</>
+											) : (
+												<>
+													<FaForward className="mr-2" />
+													{` Pular ${skipVotes}/${requiredVotes}`}
+												</>
+											)}
 										</Button>
 									</div>
-								)}
+								</div>
 							</>
 						)}
 					</Card>
 				)}
+
 				<div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
-					<Card className="w-full lg:w-[60%]">
+					<Card className="w-full lg:w-[45%]">
+						<CardHeader>
+							<CardTitle>Próximas músicas</CardTitle>
+							<CardDescription>Próximas músicas que tocarão</CardDescription>
+						</CardHeader>
+						{rankedUpcomingSongs.length === 0 && (
+							<CardContent>
+								<p className="text-center text-zinc-500">
+									Não há músicas na lista de próximas músicas.
+								</p>
+							</CardContent>
+						)}
+						{rankedUpcomingSongs.map((musica, index) => (
+							<div key={musica.id}>
+								<PlaylistMusicaComponent
+									id={musica.id}
+									rank={index + 1}
+									musica={musica.title}
+									imagem={musica.thumbnail}
+									isAdmin={isAdmin}
+									onRemove={() => handleRemoveMusicPlaylist(musica.id)}
+									onReset={() => handleResetMusic(musica.id)}
+									onForcePlay={() => handleForcePlayMusic(musica.id)}
+								/>
+							</div>
+						))}
+					</Card>
+					<Card className="w-full lg:w-[55%]">
 						<CardHeader className="flex flex-row items-center justify-between">
 							<div>
 								<CardTitle>Playlist</CardTitle>
 								<CardDescription>Músicas na playlist</CardDescription>
 							</div>
-							<AddMusicComponent />
+							<div className="hidden lg:flex">
+								<AddMusicComponent />
+							</div>
 						</CardHeader>
-						<div className="px-6 py-3">
-							<Input placeholder="Pesquisar..." />
-						</div>
-						{musicas.length === 0 && (
+						{filteredMusicas.length > 0 && (
+							<div className="px-6 py-3">
+								<Input
+									placeholder="Pesquisar..."
+									value={searchTerm}
+									onChange={handleSearchChange}
+								/>
+							</div>
+						)}
+						{filteredMusicas.length === 0 && (
 							<CardContent>
 								<p className="text-center text-zinc-500">
 									Não há músicas na playlist. Adicione músicas para começar a
@@ -207,35 +415,12 @@ export default function PlaylistIndex() {
 										isAdmin={isAdmin}
 										onRemove={() => handleRemoveMusic(musica.id)}
 										tocada={musica?.tocada}
+										onReset={() => handleResetMusic(musica.id)}
+										onForcePlay={() => handleForcePlayMusic(musica.id)}
 									/>
 								</div>
 							)
 						})}
-					</Card>
-					<Card className="w-full lg:w-[40%]">
-						<CardHeader>
-							<CardTitle>Próximas músicas</CardTitle>
-							<CardDescription>Próximas músicas que tocarão</CardDescription>
-						</CardHeader>
-						{musicas.length === 0 && (
-							<CardContent>
-								<p className="text-center text-zinc-500">
-									Não há músicas na playlist.
-								</p>
-							</CardContent>
-						)}
-						{rankedUpcomingSongs.map((musica, index) => (
-							<div key={musica.id}>
-								<PlaylistMusicaComponent
-									id={musica.id}
-									rank={index + 1}
-									musica={musica.title}
-									imagem={musica.thumbnail}
-									isAdmin={isAdmin}
-									onRemove={() => handleRemoveMusic(musica.id)}
-								/>
-							</div>
-						))}
 					</Card>
 				</div>
 			</main>

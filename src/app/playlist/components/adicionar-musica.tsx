@@ -84,7 +84,9 @@ const AddMusicComponent: React.FC = () => {
 						onChange={(e) => setUrl(e.target.value)}
 					/>
 					{error && <p className="text-red-500">{error}</p>}
-					<Button onClick={handleAddMusic}>Adicionar música</Button>
+					<Button onClick={handleAddMusic}>
+						<FaPlus className="mr-2" /> Adicionar música
+					</Button>
 				</DialogContent>
 			</Dialog>
 		)
@@ -93,7 +95,9 @@ const AddMusicComponent: React.FC = () => {
 	return (
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerTrigger asChild>
-				<Button>Adicionar Música</Button>
+				<Button>
+					<FaPlus className="mr-2" /> Adicionar Música
+				</Button>
 			</DrawerTrigger>
 			<DrawerContent className="w-full p-3">
 				<DrawerHeader className="text-left">

@@ -1,6 +1,7 @@
 import { CardContent } from '@/components/ui/card'
 
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import { FaTrash } from 'react-icons/fa6'
 import ReactPlayer from 'react-player'
 import VotacaoComponent from './votos'
@@ -20,6 +21,7 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 	musica,
 	url,
 	isAdmin,
+	imagem,
 	onEnd,
 	onRemove,
 }) => {
@@ -32,33 +34,55 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 	return (
 		<CardContent className="flex flex-col gap-2">
 			<div className="flex flex-col justify-between gap-3 rounded-lg bg-zinc-100 p-4">
-				<div className="flex flex-col items-center justify-between gap-3 lg:flex-row">
-					<div className="flex w-full flex-col items-center gap-3 lg:flex-row">
-						<div className="flex items-center justify-center">
-							<ReactPlayer
-								url={url}
-								className="h-auto w-full max-w-md lg:max-w-full"
-								playing
-								onEnded={handleEnd}
-								width="100%"
-								height="100%"
-								controls={true}
-							/>
-						</div>
+				{musica && (
+					<div className="flex flex-col items-center justify-between gap-3 lg:flex-row">
+						<div className="flex w-full flex-col items-center gap-3 lg:flex-row">
+							<div className="flex items-center justify-center">
+								{isAdmin && (
+									<ReactPlayer
+										url={url}
+										playing={true}
+										onEnded={handleEnd}
+										width="400px"
+										height="225px"
+										controls={true}
+										// config={{
+										// 	youtube: {
+										// 		onUnstarted: () => playing={true},
+										// 	},
+										// }}
+									/>
+								)}
+								{!isAdmin && (
+									<Image
+										src={imagem}
+										alt={musica}
+										width={400}
+										height={225}
+										className="rounded-lg"
+									/>
+								)}
+							</div>
 
-						<div className="w-full">
-							<h1 className="font-bold text-lg">{musica}</h1>
+							<div className="w-full">
+								<h1 className="font-bold text-lg">{musica}</h1>
+							</div>
+						</div>
+						<div className="flex gap-2">
+							<VotacaoComponent musicId={id} />
+							{isAdmin && (
+								<Button
+									variant={'destructive'}
+									onClick={() => onRemove(id)}
+									size="sm"
+								>
+									<FaTrash />
+								</Button>
+							)}
 						</div>
 					</div>
-					<div className="flex gap-2">
-						<VotacaoComponent musicId={id} />
-						{isAdmin && (
-							<Button onClick={() => onRemove(id)} size="sm">
-								<FaTrash />
-							</Button>
-						)}
-					</div>
-				</div>
+				)}
+				{!musica && <p>Nenhuma música tocando agora</p>}
 			</div>
 		</CardContent>
 	)
