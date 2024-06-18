@@ -1,5 +1,6 @@
 'use client'
 
+import AdcionarAoCalendario from '@/components/adicionar-ao-calendario'
 import FooterCard from '@/components/footer-card'
 import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
@@ -118,12 +119,17 @@ export default function Confirmar() {
 										É só clicar no botão abaixo e sua presença será confirmada!
 									</p>
 								</div>
+								<div className="flex items-center justify-center">
+									<AdcionarAoCalendario />
+								</div>
 								<div>
 									<AvatarConfirmados modelo={2} />
 								</div>
+
 								<div className="flex flex-col gap-2">
 									<p>
-										É acompanhante? Informe o nome do(a) convidado(a) abaixo.
+										<b>É acompanhante?</b> Informe o nome do(a) convidado(a)
+										abaixo.
 									</p>
 									<Input
 										onChange={() => {
