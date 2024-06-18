@@ -10,11 +10,10 @@ export const useVoteContext = () => useContext(VoteContext)
 export const VoteProvider = ({ children }) => {
 	const [votes, setVotes] = useState({})
 
-	const fetchVotes = async (musicId) => {
-		let votesData = {}
+	const fetchVotes = async (musicId: any) => {
 		const voteRef = ref(database, `votos/${musicId}`)
 		const snapshot = await get(voteRef)
-		votesData = snapshot.val() || {}
+		const votesData = snapshot.val() || {}
 
 		const musicRef = ref(database, `musicas/${musicId}`)
 		const musicSnapshot = await get(musicRef)
@@ -25,15 +24,25 @@ export const VoteProvider = ({ children }) => {
 			...musicData,
 		}
 
-		setVotes((prevVotes) => ({
-			...prevVotes,
-			[musicId]: combinedData,
-		}))
+		setVotes((prevVotes) => {
+			if (JSON.stringify(prevVotes[musicId]) !== JSON.stringify(combinedData)) {
+				return {
+					...prevVotes,
+					[musicId]: combinedData,
+				}
+			}
+
+			return prevVotes
+		})
 
 		return combinedData
 	}
 
-	const updateVote = async (musicId, userId, type) => {
+	const updateVote = async (
+		musicId: string | number,
+		userId: string | number,
+		type: unknown,
+	) => {
 		const voteRef = ref(database, `votos/${musicId}/${userId}`)
 		const totalLikesRef = ref(database, `musicas/${musicId}/likes`)
 		const totalDislikesRef = ref(database, `musicas/${musicId}/dislikes`)
@@ -83,7 +92,22 @@ export const VoteProvider = ({ children }) => {
 				}
 			}
 
-			fetchVotes(musicId)
+			// Atualizar diretamente o estado dos votos ao invés de chamar fetchVotes
+			setVotes((prevVotes) => ({
+				...prevVotes,
+				[musicId]: {
+					...prevVotes[musicId],
+					[userId]: isRemovingVote ? null : type,
+					likes:
+						type === 'like'
+							? (prevVotes[musicId].likes || 0) + 1
+							: prevVotes[musicId].likes,
+					dislikes:
+						type === 'dislike'
+							? (prevVotes[musicId].dislikes || 0) + 1
+							: prevVotes[musicId].dislikes,
+				},
+			}))
 		} catch (error) {
 			console.error('Erro ao atualizar votos', error)
 			toast.error('Erro ao atualizar votos', {

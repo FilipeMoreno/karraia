@@ -7,7 +7,12 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 	const videoId = videoIdMatch ? videoIdMatch[1] : null
 
 	if (!videoId) {
-		throw new Error('ID do vídeo não encontrado na URL.')
+		return {
+			title: '',
+			thumbnail: '',
+			url: '',
+			error: 'ID do vídeo não encontrado na URL.',
+		}
 	}
 
 	const apiKey = process.env.YOUTUBE_API_KEY
@@ -19,12 +24,16 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 		const data = await response.json()
 
 		if (data.items.length === 0) {
-			throw new Error('Vídeo não encontrado.')
+			return {
+				title: '',
+				thumbnail: '',
+				url: '',
+				error: 'Vídeo não encontrado.',
+			}
 		}
 
 		const { title, thumbnails } = data.items[0].snippet
 
-		// Tenta obter a thumbnail de maior qualidade disponível
 		const thumbnailUrl =
 			thumbnails.maxres?.url ||
 			thumbnails.standard?.url ||
@@ -36,9 +45,15 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 			title,
 			thumbnail: thumbnailUrl,
 			url: `https://www.youtube.com/watch?v=${videoId}`,
+			error: '',
 		}
 	} catch (error) {
-		console.error('Error fetching YouTube data', error)
-		return null
+		console.error('Erro ao buscar dados do YouTube:', error)
+		return {
+			title: '',
+			thumbnail: '',
+			url: '',
+			error: 'Erro ao buscar detalhes do vídeo.',
+		}
 	}
 }

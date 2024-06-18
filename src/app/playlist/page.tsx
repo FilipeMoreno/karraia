@@ -10,6 +10,7 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { userAuthContext } from '@/context/AuthContext'
 import { VoteProvider } from '@/context/Votos'
 import { database } from '@/lib/firebaseService'
@@ -303,7 +304,7 @@ export default function PlaylistIndex() {
 									onRemove={() => handleRemoveMusic(currentMusic.id)}
 								/>
 
-								<div className="flex items-center justify-between bg-zinc-100 p-4">
+								<div className="flex flex-col items-center justify-normal gap-2 bg-zinc-100 p-4 lg:flex-row lg:justify-between">
 									<div className="flex flex-row items-center justify-center gap-2">
 										<Image
 											src={currentMusic.addedByPhoto}
@@ -349,7 +350,7 @@ export default function PlaylistIndex() {
 					</Card>
 				)}
 
-				<div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
+				<div className="flex w-full flex-col gap-4 lg:flex-row">
 					<Card className="w-full lg:w-[45%]">
 						<CardHeader>
 							<CardTitle>Próximas músicas</CardTitle>
@@ -362,20 +363,22 @@ export default function PlaylistIndex() {
 								</p>
 							</CardContent>
 						)}
-						{rankedUpcomingSongs.map((musica, index) => (
-							<div key={musica.id}>
-								<PlaylistMusicaComponent
-									id={musica.id}
-									rank={index + 1}
-									musica={musica.title}
-									imagem={musica.thumbnail}
-									isAdmin={isAdmin}
-									onRemove={() => handleRemoveMusicPlaylist(musica.id)}
-									onReset={() => handleResetMusic(musica.id)}
-									onForcePlay={() => handleForcePlayMusic(musica.id)}
-								/>
-							</div>
-						))}
+						<ScrollArea className="flex max-h-[500px] flex-col gap-2">
+							{rankedUpcomingSongs.map((musica, index) => (
+								<div key={musica.id}>
+									<PlaylistMusicaComponent
+										id={musica.id}
+										rank={index + 1}
+										musica={musica.title}
+										imagem={musica.thumbnail}
+										isAdmin={isAdmin}
+										onRemove={() => handleRemoveMusicPlaylist(musica.id)}
+										onReset={() => handleResetMusic(musica.id)}
+										onForcePlay={() => handleForcePlayMusic(musica.id)}
+									/>
+								</div>
+							))}
+						</ScrollArea>
 					</Card>
 					<Card className="w-full lg:w-[55%]">
 						<CardHeader className="flex flex-row items-center justify-between">
@@ -387,6 +390,7 @@ export default function PlaylistIndex() {
 								<AddMusicComponent />
 							</div>
 						</CardHeader>
+
 						{filteredMusicas.length > 0 && (
 							<div className="px-6 py-3">
 								<Input
@@ -404,23 +408,27 @@ export default function PlaylistIndex() {
 								</p>
 							</CardContent>
 						)}
-						{orderedPlaylist.map((musica, index) => {
-							return (
-								<div key={musica.id}>
-									<PlaylistMusicaComponent
-										id={musica.id}
-										rank={index + 1}
-										musica={musica.title}
-										imagem={musica.thumbnail}
-										isAdmin={isAdmin}
-										onRemove={() => handleRemoveMusic(musica.id)}
-										tocada={musica?.tocada}
-										onReset={() => handleResetMusic(musica.id)}
-										onForcePlay={() => handleForcePlayMusic(musica.id)}
-									/>
-								</div>
-							)
-						})}
+						<ScrollArea className="flex max-h-[500px] flex-col gap-2">
+							{orderedPlaylist.map((musica, index) => {
+								const position =
+									musicas.findIndex((m) => m.id === musica.id) + 1
+								return (
+									<div key={musica.id}>
+										<PlaylistMusicaComponent
+											id={musica.id}
+											rank={position}
+											musica={musica.title}
+											imagem={musica.thumbnail}
+											isAdmin={isAdmin}
+											onRemove={() => handleRemoveMusic(musica.id)}
+											tocada={musica?.tocada}
+											onReset={() => handleResetMusic(musica.id)}
+											onForcePlay={() => handleForcePlayMusic(musica.id)}
+										/>
+									</div>
+								)
+							})}
+						</ScrollArea>
 					</Card>
 				</div>
 			</main>

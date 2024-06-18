@@ -39,19 +39,16 @@ const PlaylistTocandoAgora: React.FC<PlaylistMusicaComponentProps> = ({
 						<div className="flex w-full flex-col items-center gap-3 lg:flex-row">
 							<div className="flex items-center justify-center">
 								{isAdmin && (
-									<ReactPlayer
-										url={url}
-										playing={true}
-										onEnded={handleEnd}
-										width="400px"
-										height="225px"
-										controls={true}
-										// config={{
-										// 	youtube: {
-										// 		onUnstarted: () => playing={true},
-										// 	},
-										// }}
-									/>
+									<div className="h-[178px] w-[300px] rounded-lg p-4 lg:h-[225px] lg:w-[400px]">
+										<ReactPlayer
+											url={url}
+											playing={true}
+											onEnded={handleEnd}
+											width="100%"
+											height="100%"
+											controls={true}
+										/>
+									</div>
 								)}
 								{!isAdmin && (
 									<Image

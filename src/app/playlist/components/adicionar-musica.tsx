@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import {
 	Dialog,
@@ -23,9 +21,10 @@ import { Input } from '@/components/ui/input'
 import { userAuthContext } from '@/context/AuthContext'
 import { addMusic } from '@/lib/add-musica'
 import { database } from '@/lib/firebaseService'
+import { type MusicDetails, getYouTubeVideoData } from '@/lib/youtube-api' // ajuste o caminho conforme necessário
 import { ref } from 'firebase/database'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { get } from 'react-hook-form'
 import { FaPlus } from 'react-icons/fa6'
 import { useMediaQuery } from 'usehooks-ts'
 
@@ -35,30 +34,77 @@ const AddMusicComponent: React.FC = () => {
 	const isDesktop = useMediaQuery('(min-width: 768px)')
 	const [open, setOpen] = useState(false)
 	const { userAuth } = userAuthContext()
+	const [musicDetails, setMusicDetails] = useState<MusicDetails | null>(null)
 
 	useEffect(() => {
-		setError('')
-		setUrl('')
+		resetForm()
 	}, [open])
 
+	const resetForm = () => {
+		setUrl('')
+		setError('')
+		setMusicDetails(null)
+	}
+
+	const fetchMusicDetails = async (videoUrl: string) => {
+		try {
+			const details = await getYouTubeVideoData(videoUrl)
+			setMusicDetails(details)
+			setError(details.error || '')
+		} catch (error) {
+			console.error('Erro ao obter detalhes da música:', error)
+			setError('Erro ao obter detalhes da música.')
+			setMusicDetails(null)
+		}
+	}
+
+	const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newUrl = e.target.value
+		setUrl(newUrl)
+		fetchMusicDetails(newUrl)
+	}
+
 	const handleAddMusic = async () => {
-		if (url) {
-			const success = await addMusic(url, userAuth)
-			if (!success) {
-				setError('Ocorreu um erro ao adicionar a música.')
-			} else {
-				setOpen(false)
-				setUrl('')
-				setError('')
+		try {
+			if (!url) {
+				setError('Por favor, insira um link do YouTube.')
+				return
 			}
-		} else {
-			setError('Por favor, insira um link do YouTube.')
+
+			const success = await addMusic(url, userAuth)
+			if (success) {
+				setOpen(false)
+				resetForm()
+			} else {
+				setError('Ocorreu um erro ao adicionar a música.')
+			}
+		} catch (error) {
+			console.error('Erro ao adicionar a música:', error)
+			setError('Ocorreu um erro ao adicionar a música.')
 		}
 	}
 
 	const handleCloseModal = () => {
 		setOpen(false)
-		setError('')
+		resetForm()
+	}
+
+	const renderMusicDetails = () => {
+		if (musicDetails) {
+			return (
+				<div className="flex flex-col items-center gap-3 rounded-lg bg-zinc-100 p-4">
+					<Image
+						src={musicDetails.thumbnail}
+						alt={musicDetails.title}
+						width={400}
+						height={225}
+						className="rounded-lg"
+					/>
+					<p className="text-center text-sm">{musicDetails.title}</p>
+				</div>
+			)
+		}
+		return null
 	}
 
 	if (isDesktop) {
@@ -77,13 +123,14 @@ const AddMusicComponent: React.FC = () => {
 							Insira o link da música do YouTube abaixo.
 						</DialogDescription>
 					</DialogHeader>
+					{error && <p className="text-red-500">{error}</p>}
+					{!error && renderMusicDetails()}
 					<Input
 						type="text"
 						placeholder="Link do YouTube"
 						value={url}
-						onChange={(e) => setUrl(e.target.value)}
+						onChange={handleUrlChange}
 					/>
-					{error && <p className="text-red-500">{error}</p>}
 					<Button onClick={handleAddMusic}>
 						<FaPlus className="mr-2" /> Adicionar música
 					</Button>
@@ -106,17 +153,18 @@ const AddMusicComponent: React.FC = () => {
 						Insira o link da música do YouTube abaixo.
 					</DrawerDescription>
 				</DrawerHeader>
-				<div className="flex flex-col gap-2">
+				<div className="flex flex-col gap-4">
+					{error && <p className="text-center text-red-500">{error}</p>}
+					{!error && renderMusicDetails()}
 					<Input
 						type="text"
 						placeholder="Link do YouTube"
 						value={url}
-						onChange={(e) => setUrl(e.target.value)}
+						onChange={handleUrlChange}
 					/>
-					{error && <p className="text-red-500">{error}</p>}
 					<Button onClick={handleAddMusic}>Adicionar música</Button>
 				</div>
-				<DrawerFooter>
+				<DrawerFooter className="w-full">
 					<DrawerClose asChild onClick={handleCloseModal}>
 						<Button variant="outline" className="w-full">
 							Cancelar
