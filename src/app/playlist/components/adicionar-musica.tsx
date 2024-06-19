@@ -18,21 +18,24 @@ import {
 	DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { userAuthContext } from '@/context/AuthContext'
 import { addMusic } from '@/lib/add-musica'
 import { getYouTubeVideoData } from '@/lib/youtube-api'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 import { useMediaQuery } from 'usehooks-ts'
 
 const AddMusicComponent: React.FC = () => {
 	const [url, setUrl] = useState<string>('')
 	const [error, setError] = useState<string>('')
+	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const isDesktop = useMediaQuery('(min-width: 768px)')
 	const [open, setOpen] = useState(false)
 	const { userAuth } = userAuthContext()
 	const [musicDetails, setMusicDetails] = useState<any>(null)
+	const drawerContentRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		resetForm()
@@ -42,9 +45,11 @@ const AddMusicComponent: React.FC = () => {
 		setUrl('')
 		setError('')
 		setMusicDetails(null)
+		setIsLoading(false)
 	}
 
 	const fetchMusicDetails = async (videoUrl: string) => {
+		setIsLoading(true)
 		try {
 			const details = await getYouTubeVideoData(videoUrl)
 			setMusicDetails(details)
@@ -53,6 +58,8 @@ const AddMusicComponent: React.FC = () => {
 			console.error('Erro ao obter detalhes da música:', error)
 			setError('Erro ao obter detalhes da música.')
 			setMusicDetails(null)
+		} finally {
+			setIsLoading(false)
 		}
 	}
 
@@ -88,6 +95,15 @@ const AddMusicComponent: React.FC = () => {
 	}
 
 	const renderMusicDetails = () => {
+		if (isLoading) {
+			return (
+				<div className="flex flex-col items-center gap-3 rounded-lg bg-zinc-100 p-4">
+					<Skeleton className="h-36 w-64 rounded-lg" />
+					<Skeleton className="mt-4 h-6 w-48" />
+				</div>
+			)
+		}
+
 		if (musicDetails) {
 			return (
 				<div className="flex flex-col items-center gap-3 rounded-lg bg-zinc-100 p-4">
@@ -104,6 +120,13 @@ const AddMusicComponent: React.FC = () => {
 		}
 		return null
 	}
+
+	useEffect(() => {
+		if (drawerContentRef.current && !isDesktop) {
+			drawerContentRef.current.style.height = 'auto'
+			drawerContentRef.current.scrollTo(0, 0)
+		}
+	}, [musicDetails, isDesktop])
 
 	if (isDesktop) {
 		return (
@@ -144,7 +167,7 @@ const AddMusicComponent: React.FC = () => {
 					<FaPlus className="mr-2" /> Adicionar Música
 				</Button>
 			</DrawerTrigger>
-			<DrawerContent className="w-full p-3">
+			<DrawerContent ref={drawerContentRef} className="w-full p-3">
 				<DrawerHeader className="text-left">
 					<DrawerTitle>Adicionar Música</DrawerTitle>
 					<DrawerDescription>
