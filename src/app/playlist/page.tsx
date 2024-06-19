@@ -391,15 +391,14 @@ export default function PlaylistIndex() {
 							</div>
 						</CardHeader>
 
-						{filteredMusicas.length > 0 && (
-							<div className="px-6 py-3">
-								<Input
-									placeholder="Pesquisar..."
-									value={searchTerm}
-									onChange={handleSearchChange}
-								/>
-							</div>
-						)}
+						<div className="px-6 py-3">
+							<Input
+								placeholder="Pesquisar..."
+								value={searchTerm}
+								onChange={handleSearchChange}
+							/>
+						</div>
+
 						{filteredMusicas.length === 0 && (
 							<CardContent>
 								<p className="text-center text-zinc-500">
