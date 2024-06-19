@@ -14,6 +14,8 @@ import {
 	DrawerDescription,
 	DrawerFooter,
 	DrawerHeader,
+	DrawerOverlay,
+	DrawerPortal,
 	DrawerTitle,
 	DrawerTrigger,
 } from '@/components/ui/drawer'
@@ -38,7 +40,9 @@ const AddMusicComponent: React.FC = () => {
 	const drawerContentRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
-		resetForm()
+		if (open) {
+			resetForm()
+		}
 	}, [open])
 
 	const resetForm = () => {
@@ -167,32 +171,39 @@ const AddMusicComponent: React.FC = () => {
 					<FaPlus className="mr-2" /> Adicionar Música
 				</Button>
 			</DrawerTrigger>
-			<DrawerContent ref={drawerContentRef} className="w-full p-3">
-				<DrawerHeader className="text-left">
-					<DrawerTitle>Adicionar Música</DrawerTitle>
-					<DrawerDescription>
-						Insira o link da música do YouTube abaixo.
-					</DrawerDescription>
-				</DrawerHeader>
-				<div className="flex flex-col gap-4">
-					{error && <p className="text-center text-red-500">{error}</p>}
-					{!error && renderMusicDetails()}
-					<Input
-						type="text"
-						placeholder="Link do YouTube"
-						value={url}
-						onChange={handleUrlChange}
-					/>
-					<Button onClick={handleAddMusic}>Adicionar música</Button>
-				</div>
-				<DrawerFooter className="w-full">
-					<DrawerClose asChild onClick={handleCloseModal}>
-						<Button variant="outline" className="w-full">
-							Cancelar
-						</Button>
-					</DrawerClose>
-				</DrawerFooter>
-			</DrawerContent>
+			<DrawerOverlay className="fixed inset-0 bg-black/40" />
+			<DrawerPortal>
+				<DrawerContent
+					ref={drawerContentRef}
+					className="fixed right-0 bottom-0 left-0 flex h-auto max-h-[97%] flex-col rounded-t-lg border border-gray-200 bg-white p-3"
+				>
+					<DrawerHeader className="text-left">
+						<DrawerTitle>Adicionar Música</DrawerTitle>
+						<DrawerDescription>
+							Insira o link da música do YouTube abaixo.
+						</DrawerDescription>
+					</DrawerHeader>
+					<div className="flex flex-col gap-4">
+						{error && <p className="text-center text-red-500">{error}</p>}
+
+						<Input
+							type="text"
+							placeholder="Link do YouTube"
+							value={url}
+							onChange={handleUrlChange}
+						/>
+						<Button onClick={handleAddMusic}>Adicionar música</Button>
+						{!error && renderMusicDetails()}
+					</div>
+					<DrawerFooter className="w-full">
+						<DrawerClose asChild onClick={handleCloseModal}>
+							<Button variant="outline" className="w-full">
+								Cancelar
+							</Button>
+						</DrawerClose>
+					</DrawerFooter>
+				</DrawerContent>
+			</DrawerPortal>
 		</Drawer>
 	)
 }
