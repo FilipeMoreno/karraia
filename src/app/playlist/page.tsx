@@ -282,7 +282,7 @@ export default function PlaylistIndex() {
 
 	return (
 		<VoteProvider>
-			<main className="flex min-h-screen flex-col items-center gap-4 p-4">
+			<main className="flex min-h-screen w-full flex-col items-center gap-4 p-4">
 				<LogoComponent />
 				<div className="flex w-full items-center justify-center md:hidden">
 					<AddMusicComponent />
@@ -386,7 +386,7 @@ export default function PlaylistIndex() {
 								<CardTitle>Playlist</CardTitle>
 								<CardDescription>Músicas na playlist</CardDescription>
 							</div>
-							<div className="hidden lg:flex">
+							<div className="hidden md:flex">
 								<AddMusicComponent />
 							</div>
 						</CardHeader>
