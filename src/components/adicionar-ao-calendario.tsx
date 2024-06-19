@@ -10,7 +10,7 @@ export default function AdcionarAoCalendario() {
 			endDate="2024-06-30"
 			endTime="00:00"
 			timeZone="America/Sao_Paulo"
-			location="Recanto Fabiana (Avenida Alcebíades de Paula Neto, 31 - Jardim Oriental - Maringá/PR)"
+			location="Avenida Alcebíades de Paula Neto, 31 - Jardim Oriental - Maringá, PR"
 			options="'Apple','Google','Outlook.com','Microsoft365'"
 			buttonStyle="date"
 			label="Adicionar ao calendário"
