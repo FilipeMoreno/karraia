@@ -369,23 +369,29 @@ export default function Confirmados() {
 							<TableCell colSpan={6}>
 								<div>
 									<p>
-										Total de confirmados: <b>{getTotalConfirmados()}</b>
-									</p>
-									<p>
-										Total de pagos: <b>{getTotalPagos()}</b>
+										Total de confirmados: <b>{getTotalConfirmados()}</b> (
+										{Intl.NumberFormat('pt-BR', {
+											style: 'currency',
+											currency: 'BRL',
+										}).format(getTotalConfirmados() * 25)}
+										)
 									</p>
 									<p>
 										Faltam pagar:{' '}
-										<b>{getTotalConfirmados() - getTotalPagos()}</b>
+										<b>{getTotalConfirmados() - getTotalPagos()} </b>(
+										{Intl.NumberFormat('pt-BR', {
+											style: 'currency',
+											currency: 'BRL',
+										}).format((getTotalConfirmados() - getTotalPagos()) * 25)}
+										)
 									</p>
 									<p>
-										Total arrecadado:{' '}
-										<b>
-											{Intl.NumberFormat('pt-BR', {
-												style: 'currency',
-												currency: 'BRL',
-											}).format(getTotalPagos() * 25)}
-										</b>
+										Total de pagos: <b>{getTotalPagos()} </b>(
+										{Intl.NumberFormat('pt-BR', {
+											style: 'currency',
+											currency: 'BRL',
+										}).format(getTotalPagos() * 25)}
+										)
 									</p>
 								</div>
 							</TableCell>
