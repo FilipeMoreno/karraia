@@ -1,5 +1,6 @@
 'use client'
 
+import AdcionarAoCalendario from '@/components/adicionar-ao-calendario'
 import FooterCard from '@/components/footer-card'
 import Loading from '@/components/loading'
 import LogoComponent from '@/components/logo'
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
+import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { get, getDatabase, off, onValue, ref } from 'firebase/database'
 import { InfoIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -80,6 +82,19 @@ export default function Confirmado() {
 		return <Loading />
 	}
 
+	const event = {
+		title: 'KArraiá',
+		description: 'KArraiá - Festa Junina da Karol!',
+		startTime: '2024-06-29T18:00:00+03:00',
+		endTime: '2024-06-30T00:00:00+03:00',
+		location:
+			'Recanto Fabiana (Avenida Alcebíades de Paula Neto, 31 - Jardim Oriental - Maringá/PR)',
+		attendees: [
+			'Karol <karolharummy@gmail.com>',
+			'Filipe Moreno <eu@filipemoreno.com.br>',
+		],
+	}
+
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-8 bg-fj bg-no-repeat p-4">
 			<LogoComponent />
@@ -94,6 +109,9 @@ export default function Confirmado() {
 								confirmado, você receberá as informações pelo e-mail cadastrado.
 							</p>
 							<AvatarConfirmados modelo={1} />
+							<div className="flex items-center justify-center">
+								<AdcionarAoCalendario />
+							</div>
 						</div>
 					</CardContent>
 					<CardFooter>
@@ -117,6 +135,7 @@ export default function Confirmado() {
 							<p>Sua presença e pagamento foram confirmados.</p>
 							<p>Te espero no KArraiá, {confirmadoData?.display_name}!</p>
 							<AvatarConfirmados modelo={3} />
+							<AdcionarAoCalendario />
 						</div>
 					</CardContent>
 					<CardFooter>
