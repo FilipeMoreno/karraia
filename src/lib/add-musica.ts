@@ -3,14 +3,33 @@ import { getYouTubeVideoData } from '@/lib/youtube-api'
 import { get, ref, set } from 'firebase/database'
 import { toast } from 'sonner'
 
+const normalizeYouTubeUrl = (url: string | URL) => {
+	const urlObj = new URL(url)
+	let videoId: string | null = ''
+	if (urlObj.hostname === 'youtu.be') {
+		videoId = urlObj.pathname.slice(1)
+	} else if (
+		urlObj.hostname === 'www.youtube.com' ||
+		urlObj.hostname === 'youtube.com'
+	) {
+		videoId = urlObj.searchParams.get('v')
+	}
+	return `https://www.youtube.com/watch?v=${videoId}`
+}
+
 export const addMusic = async (url: string, user: any): Promise<boolean> => {
 	try {
 		const musicRef = ref(database, 'musicas')
 		const snapshot = await get(musicRef)
 		const musicas = snapshot.val()
 
+		const normalizedUrl = normalizeYouTubeUrl(url)
+
 		const exists =
-			musicas && Object.values(musicas).some((music: any) => music.url === url)
+			musicas &&
+			Object.values(musicas).some(
+				(music: any) => normalizeYouTubeUrl(music.url) === normalizedUrl,
+			)
 		if (exists) {
 			console.error('A música já está na playlist.')
 			toast.error('Erro ao adicionar a música.', {
@@ -19,7 +38,7 @@ export const addMusic = async (url: string, user: any): Promise<boolean> => {
 			return false
 		}
 
-		const musicDetails = await getYouTubeVideoData(url)
+		const musicDetails = await getYouTubeVideoData(normalizedUrl)
 		if (!musicDetails) {
 			console.error('Não foi possível obter detalhes da música.')
 			toast.error('Erro ao adicionar a música.', {
@@ -31,6 +50,7 @@ export const addMusic = async (url: string, user: any): Promise<boolean> => {
 		const newMusicRef = ref(database, `musicas/${Date.now()}`)
 		await set(newMusicRef, {
 			...musicDetails,
+			url: normalizedUrl,
 			likes: 0,
 			dislikes: 0,
 			addedAt: Date.now(),
