@@ -10,6 +10,7 @@ export default function LogoComponent() {
 					alt="logo"
 					width={300}
 					height={300}
+					priority
 					className="animate-duration-[5000ms] animate-infinite animate-wiggle"
 				/>
 			</Link>

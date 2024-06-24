@@ -17,6 +17,7 @@ const nextConfig = {
 		SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
 		SENTRY_DSN: process.env.SENTRY_DSN,
 		GOOGLE_GA_ID: process.env.GOOGLE_GA_ID,
+		YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
 	},
 	logging: {
 		fetches: {
@@ -36,6 +37,10 @@ const nextConfig = {
 			{
 				protocol: 'https',
 				hostname: 'lh3.googleusercontent.com',
+			},
+			{
+				protocol: 'https',
+				hostname: 'i.ytimg.com',
 			},
 		],
 	},
