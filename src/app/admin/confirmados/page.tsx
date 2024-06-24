@@ -21,6 +21,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select'
+import {
 	Table,
 	TableBody,
 	TableCell,
@@ -45,6 +54,9 @@ export default function Confirmados() {
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [loadingButtonId, setLoadingButtonId] = useState<string | null>(null)
 	const [searchTerm, setSearchTerm] = useState('')
+	const [filterPago, setFilterPago] = useState<'todos' | 'pagos' | 'nao-pagos'>(
+		'todos',
+	)
 
 	const router = useRouter()
 
@@ -73,17 +85,20 @@ export default function Confirmados() {
 	}, [])
 
 	useEffect(() => {
-		if (searchTerm === '') {
-			setFilteredConfirmados(confirmados)
-		} else {
-			const lowerCaseSearchTerm = searchTerm.toLowerCase()
-			setFilteredConfirmados(
-				confirmados.filter((confirmado) =>
-					confirmado.name.toLowerCase().includes(lowerCaseSearchTerm),
-				),
-			)
-		}
-	}, [searchTerm, confirmados])
+		const lowerCaseSearchTerm = searchTerm.toLowerCase()
+		setFilteredConfirmados(
+			confirmados.filter((confirmado) => {
+				const matchesSearch = confirmado.name
+					.toLowerCase()
+					.includes(lowerCaseSearchTerm)
+				const matchesPago =
+					filterPago === 'todos' ||
+					(filterPago === 'pagos' && confirmado.pago) ||
+					(filterPago === 'nao-pagos' && !confirmado.pago)
+				return matchesSearch && matchesPago
+			}),
+		)
+	}, [searchTerm, confirmados, filterPago])
 
 	const fetchData = () => {
 		const dbRef = ref(database, 'confirmados')
@@ -236,12 +251,32 @@ export default function Confirmados() {
 			<Card className="w-full">
 				<CardHeader className="flex flex-col items-center gap-2 lg:flex-row">
 					<CardTitle className="w-full">Lista dos confirmados</CardTitle>
-					<Input
-						type="text"
-						placeholder="Buscar pelo nome"
-						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
-					/>
+					<div className="flex gap-2">
+						<Input
+							type="text"
+							placeholder="Buscar pelo nome"
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+						/>
+						<Select
+							value={filterPago}
+							onValueChange={(value) =>
+								setFilterPago(value as 'todos' | 'pagos' | 'nao-pagos')
+							}
+						>
+							<SelectTrigger className="w-[180px]">
+								<SelectValue placeholder="Todos" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectLabel>Filtrar</SelectLabel>
+									<SelectItem value="todos">Todos</SelectItem>
+									<SelectItem value="pagos">Pagos</SelectItem>
+									<SelectItem value="nao-pagos">Não pagos</SelectItem>
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</div>
 				</CardHeader>
 				<Table>
 					<TableHeader>
