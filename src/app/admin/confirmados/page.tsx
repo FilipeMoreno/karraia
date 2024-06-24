@@ -19,6 +19,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
 	Table,
 	TableBody,
@@ -39,9 +40,11 @@ import { toast } from 'sonner'
 
 export default function Confirmados() {
 	const [confirmados, setConfirmados] = useState<any[]>([])
+	const [filteredConfirmados, setFilteredConfirmados] = useState<any[]>([])
 	const [loading, setLoading] = useState(true)
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [loadingButtonId, setLoadingButtonId] = useState<string | null>(null)
+	const [searchTerm, setSearchTerm] = useState('')
 
 	const router = useRouter()
 
@@ -69,6 +72,19 @@ export default function Confirmados() {
 		return () => unsubscribe()
 	}, [])
 
+	useEffect(() => {
+		if (searchTerm === '') {
+			setFilteredConfirmados(confirmados)
+		} else {
+			const lowerCaseSearchTerm = searchTerm.toLowerCase()
+			setFilteredConfirmados(
+				confirmados.filter((confirmado) =>
+					confirmado.name.toLowerCase().includes(lowerCaseSearchTerm),
+				),
+			)
+		}
+	}, [searchTerm, confirmados])
+
 	const fetchData = () => {
 		const dbRef = ref(database, 'confirmados')
 		onValue(
@@ -83,6 +99,7 @@ export default function Confirmados() {
 
 					dataArray.sort((a, b) => b.confirmado_em - a.confirmado_em)
 					setConfirmados(dataArray)
+					setFilteredConfirmados(dataArray)
 				} else {
 					console.log('No data available')
 				}
@@ -217,8 +234,14 @@ export default function Confirmados() {
 		<main className="flex min-h-screen w-full flex-col items-center gap-8 bg-fj bg-no-repeat p-4">
 			<LogoComponent />
 			<Card className="w-full">
-				<CardHeader>
-					<CardTitle>Lista dos confirmados</CardTitle>
+				<CardHeader className="flex flex-col items-center gap-2 lg:flex-row">
+					<CardTitle className="w-full">Lista dos confirmados</CardTitle>
+					<Input
+						type="text"
+						placeholder="Buscar pelo nome"
+						value={searchTerm}
+						onChange={(e) => setSearchTerm(e.target.value)}
+					/>
 				</CardHeader>
 				<Table>
 					<TableHeader>
@@ -232,7 +255,7 @@ export default function Confirmados() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{confirmados.map((confirmado, index) => (
+						{filteredConfirmados.map((confirmado, index) => (
 							<TableRow
 								key={confirmado?.id}
 								style={
