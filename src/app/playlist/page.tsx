@@ -106,9 +106,11 @@ export default function PlaylistIndex() {
 		if (userSkipVote) {
 			await remove(skipVoteRef)
 			setUserSkipVote(false)
+			toast.info('Voto removido com sucesso.')
 		} else {
 			await set(skipVoteRef, { voted: true })
 			setUserSkipVote(true)
+			toast.info('Voto computado com sucesso.')
 		}
 
 		onValue(skipVotesRef, (snapshot) => {
@@ -118,6 +120,7 @@ export default function PlaylistIndex() {
 			if (votes >= requiredVotes) {
 				handleSkipCurrentMusic()
 				remove(skipVotesRef)
+				toast.info('Música pulada por votação.')
 			}
 		})
 	}
