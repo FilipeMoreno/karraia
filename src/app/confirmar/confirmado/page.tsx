@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
-import { off, onValue, ref } from 'firebase/database'
+import { off, onValue, ref, remove, set } from 'firebase/database'
 import { CheckCircle2Icon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { FaCheckCircle } from 'react-icons/fa'
-import { FaPix } from 'react-icons/fa6'
+import { FaFaceFrown, FaPix } from 'react-icons/fa6'
 import { PiSignOutBold, PiSirenFill } from 'react-icons/pi'
 import { toast } from 'sonner'
 import AvatarConfirmados from '../components/avatar-confirmados'
@@ -44,6 +44,7 @@ export default function Confirmado() {
 
 	const verificarPresenca = () => {
 		const presencaRef = ref(database, `confirmados/${userAuth?.uid}/presenca`)
+		const isentoRef = ref(database, `confirmados/${userAuth?.uid}/isento`)
 
 		const presencaListener = onValue(
 			presencaRef,
@@ -56,7 +57,14 @@ export default function Confirmado() {
 						route.push('/confirmar')
 					}
 				} else {
-					route.push('/confirmar')
+					onValue(isentoRef, (isentoSnapshot) => {
+						if (isentoSnapshot.exists() && isentoSnapshot.val()) {
+							set(presencaRef, true)
+							setIsPresencaConfirmada(true)
+						} else {
+							route.push('/confirmar')
+						}
+					})
 				}
 			},
 			(error) => {
@@ -65,7 +73,10 @@ export default function Confirmado() {
 			},
 		)
 
-		return () => off(presencaRef, 'value', presencaListener)
+		return () => {
+			off(presencaRef, 'value', presencaListener)
+			off(isentoRef, 'value', presencaListener)
+		}
 	}
 
 	const verificarPagamento = () => {
@@ -87,7 +98,35 @@ export default function Confirmado() {
 			},
 		)
 
+		const pagamentoIsentoRef = ref(
+			database,
+			`confirmados/${userAuth?.uid}/isento`,
+		)
+		const pagamentoIsentoListener = onValue(
+			pagamentoIsentoRef,
+			(snapshot) => {
+				if (snapshot.exists()) {
+					const isento = snapshot.val()
+					if (isento) {
+						toast.success('Pagamento confirmado!')
+						route.push('/confirmar/pagamento')
+					}
+				}
+			},
+			(error) => {
+				console.error('Erro ao verificar isenção: ', error)
+			},
+		)
+
 		return () => off(pagamentoRef, 'value', pagamentoListener)
+	}
+
+	async function handleCancelarPresenca() {
+		await remove(ref(database, `confirmados/${userAuth?.uid}`))
+		toast.success('Presença cancelada!', {
+			description: 'Que pena que você não poderá comparecer 😔',
+		})
+		route.push('/')
 	}
 
 	if (!isPresencaConfirmada) {
@@ -116,7 +155,7 @@ export default function Confirmado() {
 						</p>
 
 						<div className="flex w-full flex-col items-center justify-center gap-4 rounded-lg border-2 border-[#38beb0]">
-							<p className="w-full bg-[#38beb0] text-center font-bold text-xl">
+							<p className="w-full bg-[#38beb0] text-center font-bold text-white text-xl">
 								PIX
 							</p>
 							<p>
@@ -140,13 +179,23 @@ export default function Confirmado() {
 					</div>
 				</CardContent>
 				<CardFooter className="flex flex-col gap-4">
-					<Button
-						onClick={() => route.push('/confirmar/pagamento')}
-						className="w-full"
-					>
-						<FaCheckCircle className="mr-2" />
-						Já paguei
-					</Button>
+					<div className="flex w-full flex-col gap-4 rounded-lg bg-zinc-100 p-2">
+						<Button
+							onClick={() => route.push('/confirmar/pagamento')}
+							className="w-full"
+						>
+							<FaCheckCircle className="mr-2" />
+							Já paguei
+						</Button>
+						<Button
+							onClick={() => handleCancelarPresenca()}
+							className="w-full"
+							variant={'destructive'}
+						>
+							<FaFaceFrown className="mr-2" />
+							Cancelar presença
+						</Button>
+					</div>
 					<Button className="w-full" onClick={logout} variant={'destructive'}>
 						<PiSignOutBold className="mr-2" />
 						Sair do app

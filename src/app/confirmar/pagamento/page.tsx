@@ -9,12 +9,22 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
-import { get, getDatabase, off, onValue, ref } from 'firebase/database'
+import {
+	get,
+	getDatabase,
+	off,
+	onValue,
+	ref,
+	remove,
+	set,
+} from 'firebase/database'
 import { InfoIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { FaFaceFrown } from 'react-icons/fa6'
 import { PiSignOutBold } from 'react-icons/pi'
+import { toast } from 'sonner'
 import AvatarConfirmados from '../components/avatar-confirmados'
 
 export default function Confirmado() {
@@ -53,6 +63,25 @@ export default function Confirmado() {
 			},
 		)
 
+		const pagamentoIsentoRef = ref(
+			database,
+			`confirmados/${userAuth?.uid}/isento`,
+		)
+		const pagamentoIsentoListener = onValue(
+			pagamentoIsentoRef,
+			(snapshot) => {
+				if (snapshot.exists()) {
+					const isento = snapshot.val()
+					if (isento) {
+						setPago(true)
+					}
+				}
+			},
+			(error) => {
+				console.error('Erro ao verificar isenção: ', error)
+			},
+		)
+
 		return () => off(pagamentoRef, 'value', pagamentoListener)
 	}
 
@@ -82,17 +111,12 @@ export default function Confirmado() {
 		return <Loading />
 	}
 
-	const event = {
-		title: 'KArraiá',
-		description: 'KArraiá - Festa Junina da Karol!',
-		startTime: '2024-06-29T18:00:00+03:00',
-		endTime: '2024-06-30T00:00:00+03:00',
-		location:
-			'Recanto Fabiana (Avenida Alcebíades de Paula Neto, 31 - Jardim Oriental - Maringá/PR)',
-		attendees: [
-			'Karol <karolharummy@gmail.com>',
-			'Filipe Moreno <eu@filipemoreno.com.br>',
-		],
+	async function handleCancelarPresenca() {
+		await remove(ref(database, `confirmados/${userAuth?.uid}`))
+		toast.success('Presença cancelada!', {
+			description: 'Que pena que você não poderá comparecer 😔',
+		})
+		route.push('/')
 	}
 
 	return (
@@ -114,7 +138,15 @@ export default function Confirmado() {
 							</div>
 						</div>
 					</CardContent>
-					<CardFooter>
+					<CardFooter className="flex flex-col gap-4">
+						<Button
+							onClick={() => handleCancelarPresenca()}
+							className="w-full"
+							variant={'destructive'}
+						>
+							<FaFaceFrown className="mr-2" />
+							Cancelar presença
+						</Button>
 						<Button onClick={logout} variant={'destructive'} className="w-full">
 							<PiSignOutBold className="mr-2" />
 							Sair do app
@@ -138,7 +170,15 @@ export default function Confirmado() {
 							<AdcionarAoCalendario />
 						</div>
 					</CardContent>
-					<CardFooter>
+					<CardFooter className="flex flex-col gap-4">
+						<Button
+							onClick={() => handleCancelarPresenca()}
+							className="w-full"
+							variant={'destructive'}
+						>
+							<FaFaceFrown className="mr-2" />
+							Cancelar presença
+						</Button>
 						<Button onClick={logout} variant={'destructive'} className="w-full">
 							<PiSignOutBold className="mr-2" />
 							Sair do app
