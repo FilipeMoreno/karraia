@@ -54,9 +54,9 @@ export default function Confirmados() {
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [loadingButtonId, setLoadingButtonId] = useState<string | null>(null)
 	const [searchTerm, setSearchTerm] = useState('')
-	const [filterPago, setFilterPago] = useState<'todos' | 'pagos' | 'nao-pagos'>(
-		'todos',
-	)
+	const [filterPago, setFilterPago] = useState<
+		'todos' | 'pagos' | 'nao-pagos' | 'isentos'
+	>('todos')
 
 	const router = useRouter()
 
@@ -94,7 +94,10 @@ export default function Confirmados() {
 				const matchesPago =
 					filterPago === 'todos' ||
 					(filterPago === 'pagos' && confirmado.pago) ||
-					(filterPago === 'nao-pagos' && !confirmado.pago)
+					(filterPago === 'nao-pagos' &&
+						!confirmado.pago &&
+						!confirmado?.isento) ||
+					(filterPago === 'isentos' && confirmado.isento)
 				return matchesSearch && matchesPago
 			}),
 		)
@@ -158,6 +161,57 @@ export default function Confirmados() {
 		} catch (error: any) {
 			toast.error('Erro ao confirmar pagamento', {
 				description: error?.message,
+			})
+		} finally {
+			setLoadingButtonId(null)
+		}
+	}
+
+	const handleIsentar = async (id: string, email: string) => {
+		setLoadingButtonId(id)
+		const userRef = ref(database, `confirmados/${id}`)
+		try {
+			await update(userRef, {
+				isento: true,
+				isento_em: Date.now(),
+			})
+				.then(() => {
+					sendMailConfirmacao(email)
+				})
+				.catch((error) => {
+					throw new Error(
+						`Erro ao enviar e-mail de confirmação de pagamento. Erro: ${error.message}`,
+					)
+				})
+			toast.success('Isenção confirmada com sucesso!', {
+				description: 'E-mail de confirmação enviado',
+			})
+			updateConfirmados(id, {
+				pago: true,
+				pagamento_confirmado_em: Date.now(),
+			})
+		} catch (error: any) {
+			toast.error('Erro ao isentar pagamento', {
+				description: error?.message,
+			})
+		} finally {
+			setLoadingButtonId(null)
+		}
+	}
+
+	const cancelarIsencao = async (id: string) => {
+		setLoadingButtonId(id)
+		const userRef = ref(database, `confirmados/${id}`)
+		try {
+			await update(userRef, {
+				isento: false,
+				isento_em: null,
+			})
+			toast.success('Isenção cancelada com sucesso!')
+			updateConfirmados(id, { pago: false, pagamento_confirmado_em: null })
+		} catch (error: any) {
+			toast.error('Erro ao isentar pagamento', {
+				description: error.message,
 			})
 		} finally {
 			setLoadingButtonId(null)
@@ -235,7 +289,14 @@ export default function Confirmados() {
 		confirmados.filter((confirmado) => confirmado?.presenca).length
 
 	const getTotalPagos = () =>
-		confirmados.filter((confirmado) => confirmado?.pago).length
+		confirmados.filter((confirmado) => confirmado?.pago && !confirmado?.isento)
+			.length
+
+	const getTotalIsentos = () =>
+		confirmados.filter((confirmado) => confirmado?.isento).length
+
+	const getFaltamPagar = () =>
+		getTotalConfirmados() - getTotalIsentos() - getTotalPagos()
 
 	if (loading) {
 		return <Loading />
@@ -261,7 +322,9 @@ export default function Confirmados() {
 						<Select
 							value={filterPago}
 							onValueChange={(value) =>
-								setFilterPago(value as 'todos' | 'pagos' | 'nao-pagos')
+								setFilterPago(
+									value as 'todos' | 'pagos' | 'nao-pagos' | 'isentos',
+								)
 							}
 						>
 							<SelectTrigger className="w-[180px]">
@@ -273,6 +336,7 @@ export default function Confirmados() {
 									<SelectItem value="todos">Todos</SelectItem>
 									<SelectItem value="pagos">Pagos</SelectItem>
 									<SelectItem value="nao-pagos">Não pagos</SelectItem>
+									<SelectItem value="isentos">Isentos</SelectItem>
 								</SelectGroup>
 							</SelectContent>
 						</Select>
@@ -323,7 +387,9 @@ export default function Confirmados() {
 										: 'Data não disponível'}
 								</TableCell>
 								<TableCell>
-									{confirmado?.pago ? (
+									{confirmado?.isento ? (
+										<Badge variant={'info'}>Isento</Badge>
+									) : confirmado?.pago ? (
 										<Badge variant={'success'}>Sim</Badge>
 									) : (
 										<Badge variant={'destructive'}>Não</Badge>
@@ -361,7 +427,7 @@ export default function Confirmados() {
 																Cancelar pagamento
 															</DropdownMenuItem>
 														)}
-														{!confirmado?.pago && (
+														{!confirmado?.pago && !confirmado.isento && (
 															<DropdownMenuItem
 																onClick={() =>
 																	confirmarPagamento(
@@ -375,6 +441,25 @@ export default function Confirmados() {
 																) : (
 																	'Confirmar pagamento'
 																)}
+															</DropdownMenuItem>
+														)}
+														{!confirmado?.isento && (
+															<DropdownMenuItem
+																onClick={() =>
+																	handleIsentar(
+																		confirmado?.id,
+																		confirmado?.email,
+																	)
+																}
+															>
+																Isentar pagamento
+															</DropdownMenuItem>
+														)}
+														{confirmado?.isento && (
+															<DropdownMenuItem
+																onClick={() => cancelarIsencao(confirmado?.id)}
+															>
+																Cancelar isenção
 															</DropdownMenuItem>
 														)}
 													</DropdownMenuSubContent>
@@ -431,16 +516,18 @@ export default function Confirmados() {
 										{Intl.NumberFormat('pt-BR', {
 											style: 'currency',
 											currency: 'BRL',
-										}).format(getTotalConfirmados() * 25)}
+										}).format((getTotalConfirmados() - getTotalIsentos()) * 25)}
 										)
 									</p>
 									<p>
-										Faltam pagar:{' '}
-										<b>{getTotalConfirmados() - getTotalPagos()} </b>(
+										Total de isentos: <b>{getTotalIsentos()}</b>
+									</p>
+									<p>
+										Faltam pagar: <b>{getFaltamPagar()} </b>(
 										{Intl.NumberFormat('pt-BR', {
 											style: 'currency',
 											currency: 'BRL',
-										}).format((getTotalConfirmados() - getTotalPagos()) * 25)}
+										}).format(getFaltamPagar() * 25)}
 										)
 									</p>
 									<p>
