@@ -9,6 +9,21 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
+import {
+	Drawer,
+	DrawerClose,
+	DrawerContent,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
+} from '@/components/ui/drawer'
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -46,9 +61,17 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { FaEllipsisVertical, FaSpinner } from 'react-icons/fa6'
 import { toast } from 'sonner'
+import { useMediaQuery } from 'usehooks-ts'
 
 export default function Confirmados() {
 	const [confirmados, setConfirmados] = useState<any[]>([])
+	const [open, setOpen] = useState(false)
+	const [editAcompanhanteId, setEditAcompanhanteId] = useState<string | null>(
+		null,
+	)
+	const [editAcompanhanteInput, setEditAcompanhanteInput] = useState<
+		string | null
+	>(null)
 	const [filteredConfirmados, setFilteredConfirmados] = useState<any[]>([])
 	const [loading, setLoading] = useState(true)
 	const [isAdmin, setIsAdmin] = useState(false)
@@ -57,6 +80,7 @@ export default function Confirmados() {
 	const [filterPago, setFilterPago] = useState<
 		'todos' | 'pagos' | 'nao-pagos' | 'isentos'
 	>('todos')
+	const isDesktop = useMediaQuery('(min-width: 768px)')
 
 	const router = useRouter()
 
@@ -298,6 +322,35 @@ export default function Confirmados() {
 	const getFaltamPagar = () =>
 		getTotalConfirmados() - getTotalIsentos() - getTotalPagos()
 
+	const handleEditAcompanhante = (id: string, name: string) => {
+		setOpen(true)
+		setEditAcompanhanteId(id)
+		setEditAcompanhanteInput(name)
+	}
+
+	const handleSaveEditAcompanhante = async () => {
+		if (editAcompanhanteId && editAcompanhanteInput !== null) {
+			const acompanhanteValue = editAcompanhanteInput
+				? editAcompanhanteInput
+				: 'Ninguém'
+			const userRef = ref(database, `confirmados/${editAcompanhanteId}`)
+			try {
+				await update(userRef, { acompanhante: acompanhanteValue })
+				toast.success('Nome do acompanhante atualizado com sucesso!')
+				updateConfirmados(editAcompanhanteId, {
+					acompanhante: acompanhanteValue,
+				})
+			} catch (error: any) {
+				toast.error('Erro ao atualizar o nome do acompanhante', {
+					description: error.message,
+				})
+			} finally {
+				setEditAcompanhanteId(null)
+				setEditAcompanhanteInput(null)
+			}
+		}
+	}
+
 	if (loading) {
 		return <Loading />
 	}
@@ -342,6 +395,75 @@ export default function Confirmados() {
 						</Select>
 					</div>
 				</CardHeader>
+				//TODO: Fix Drawer
+				{/* {(!isDesktop && (
+					<Drawer open={open} onOpenChange={setOpen}>
+						<DrawerContent>
+							<DrawerHeader className="text-left">
+								<DrawerTitle>Editar acompanhante</DrawerTitle>
+							</DrawerHeader>
+
+							<Input
+								type="text"
+								value={editAcompanhanteInput || ''}
+								onChange={(e) => setEditAcompanhanteInput(e.target.value)}
+								placeholder="Nome do acompanhante"
+							/>
+
+							<DrawerFooter className="pt-2">
+								<DrawerClose asChild>
+									<Button onClick={handleSaveEditAcompanhante}>Salvar</Button>
+									<Button variant="outline" onClick={() => setOpen(false)}>
+										Cancelar
+									</Button>
+								</DrawerClose>
+							</DrawerFooter>
+						</DrawerContent>
+					</Drawer>
+				)) || (
+					<Dialog open={open} onOpenChange={setOpen}>
+						<DialogContent className="sm:max-w-[425px]">
+							<DialogHeader>
+								<DialogTitle>Editar acompanhante</DialogTitle>
+							</DialogHeader>
+
+							<Input
+								type="text"
+								value={editAcompanhanteInput || ''}
+								onChange={(e) => setEditAcompanhanteInput(e.target.value)}
+								placeholder="Nome do acompanhante"
+							/>
+
+							<DialogFooter>
+								<Button onClick={handleSaveEditAcompanhante}>Salvar</Button>
+								<Button variant="outline" onClick={() => setOpen(false)}>
+									Cancelar
+								</Button>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
+				)} */}
+				<Dialog open={open} onOpenChange={setOpen}>
+					<DialogContent className="sm:max-w-[425px]">
+						<DialogHeader>
+							<DialogTitle>Editar acompanhante</DialogTitle>
+						</DialogHeader>
+
+						<Input
+							type="text"
+							value={editAcompanhanteInput || ''}
+							onChange={(e) => setEditAcompanhanteInput(e.target.value)}
+							placeholder="Nome do acompanhante"
+						/>
+
+						<DialogFooter>
+							<Button onClick={handleSaveEditAcompanhante}>Salvar</Button>
+							<Button variant="outline" onClick={() => setOpen(false)}>
+								Cancelar
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 				<Table>
 					<TableHeader>
 						<TableRow>
@@ -494,6 +616,17 @@ export default function Confirmados() {
 													</DropdownMenuSubContent>
 												</DropdownMenuPortal>
 											</DropdownMenuSub>
+
+											<DropdownMenuItem
+												onClick={() =>
+													handleEditAcompanhante(
+														confirmado?.id,
+														confirmado?.acompanhante,
+													)
+												}
+											>
+												Editar acompanhante
+											</DropdownMenuItem>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem
 												onClick={() => cancelarPresenca(confirmado?.id)}
