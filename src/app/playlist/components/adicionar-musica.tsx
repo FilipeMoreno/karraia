@@ -251,7 +251,7 @@ const AddMusicComponent: React.FC = () => {
 			<DrawerPortal>
 				<DrawerContent
 					ref={drawerContentRef}
-					className="fixed right-0 bottom-0 left-0 flex h-auto max-h-[97%] flex-col rounded-t-lg border border-gray-200 bg-white p-3"
+					className="fixed right-0 bottom-0 left-0 flex flex-col rounded-t-lg border border-gray-200 bg-white p-3"
 				>
 					<DrawerHeader className="text-left">
 						<DrawerTitle>Adicionar Música!</DrawerTitle>
