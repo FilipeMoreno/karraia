@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react'
 import { FaExclamationTriangle, FaForward } from 'react-icons/fa'
 import { FaCheck } from 'react-icons/fa6'
 import { toast } from 'sonner'
+import BannerOnlines from '../onlines/components/banner-onlines'
 import AddMusicComponent from './components/adicionar-musica'
 import PlaylistLogin from './components/login'
 import PlaylistMusicaComponent from './components/musica'
@@ -281,6 +282,7 @@ export default function PlaylistIndex() {
 				<div className="flex w-full items-center justify-center md:hidden">
 					<AddMusicComponent />
 				</div>
+				<BannerOnlines />
 				{!playlistConfig ||
 					(!playlistConfig.isPlaying && (
 						<div className="flex w-full flex-col items-center justify-center gap-2 rounded-lg bg-white p-4">
