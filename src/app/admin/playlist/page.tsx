@@ -1,10 +1,17 @@
 'use client'
 
-import AddMusicComponent from '@/app/playlist/components/adicionar-musica'
 import LogoComponent from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from '@/components/ui/pagination'
 import { userAuthContext } from '@/context/AuthContext'
 import { database } from '@/lib/firebaseService'
 import { rankMusicas } from '@/lib/ranking-musica'
@@ -12,16 +19,10 @@ import { get, onValue, ref, remove, set, update } from 'firebase/database'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import {
-	FaArrowDown,
-	FaArrowUp,
-	FaForward,
-	FaPause,
-	FaPlay,
-	FaPlus,
-	FaTrash,
-} from 'react-icons/fa6'
+import { FaPause, FaPlay, FaTrash } from 'react-icons/fa6'
 import { toast } from 'sonner'
+
+const ITEMS_PER_PAGE = 10
 
 export default function PlayListAdmin() {
 	const { userAuth } = userAuthContext()
@@ -30,7 +31,9 @@ export default function PlayListAdmin() {
 	const [currentMusic, setCurrentMusic] = useState<any>(null)
 	const [isAdmin, setIsAdmin] = useState(false)
 	const [isPlaying, setIsPlaying] = useState(false)
-	const [newMusicTitle, setNewMusicTitle] = useState('')
+	const [requiredVotes, setRequiredVotes] = useState(0)
+	const [currentPage, setCurrentPage] = useState(1)
+	const [searchQuery, setSearchQuery] = useState('')
 
 	useEffect(() => {
 		if (!userAuth) {
@@ -44,6 +47,9 @@ export default function PlayListAdmin() {
 			let musicList = data
 				? Object.keys(data).map((key) => ({ id: key, ...data[key] }))
 				: []
+			musicList.sort(
+				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+			)
 			musicList = rankMusicas(musicList)
 			setMusicas(musicList)
 		})
@@ -55,6 +61,7 @@ export default function PlayListAdmin() {
 			const snapshot = await get(playlistConfigRef)
 			if (snapshot.exists()) {
 				setIsPlaying(snapshot.val().isPlaying)
+				setRequiredVotes(snapshot.val().requiredVotes || 0)
 			}
 		}
 
@@ -79,50 +86,6 @@ export default function PlayListAdmin() {
 		toast.success('Música removida com sucesso!')
 	}
 
-	const handlePlayNow = async (id: string) => {
-		const musicRef = ref(database, 'current_music')
-		await update(musicRef, { id, playing: true })
-		toast.success('Música tocando agora!')
-	}
-
-	const handlePromoteMusic = async (id: string) => {
-		const index = musicas.findIndex((musica) => musica.id === id)
-		if (index > 0) {
-			const newMusicas = [...musicas]
-			const [promotedMusic] = newMusicas.splice(index, 1)
-			newMusicas.splice(index - 1, 0, promotedMusic)
-			await set(ref(database, 'musicas'), newMusicas)
-			toast.success('Música promovida com sucesso!')
-		}
-	}
-
-	const handleDemoteMusic = async (id: string) => {
-		const index = musicas.findIndex((musica) => musica.id === id)
-		if (index < musicas.length - 1) {
-			const newMusicas = [...musicas]
-			const [demotedMusic] = newMusicas.splice(index, 1)
-			newMusicas.splice(index + 1, 0, demotedMusic)
-			await set(ref(database, 'musicas'), newMusicas)
-			toast.success('Música rebaixada com sucesso!')
-		}
-	}
-
-	const handleSkipMusic = async () => {
-		const currentMusicRef = ref(database, 'current_music')
-		const snapshot = await get(currentMusicRef)
-		if (snapshot.exists()) {
-			const currentMusicId = snapshot.val().id
-			const index = musicas.findIndex((musica) => musica.id === currentMusicId)
-			if (index >= 0 && index < musicas.length - 1) {
-				const nextMusicId = musicas[index + 1].id
-				await update(currentMusicRef, { id: nextMusicId, playing: true })
-				toast.success('Música pulada com sucesso!')
-			} else {
-				toast.error('Não há mais músicas na lista para pular!')
-			}
-		}
-	}
-
 	const handleTogglePlaylist = async () => {
 		const playlistConfigRef = ref(database, 'playlist_config')
 		const snapshot = await get(playlistConfigRef)
@@ -141,6 +104,35 @@ export default function PlayListAdmin() {
 		}
 	}
 
+	const handleRequiredVotesChange = async (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const newVotes = Number.parseInt(e.target.value, 10)
+		setRequiredVotes(newVotes)
+		const playlistConfigRef = ref(database, 'playlist_config')
+		await update(playlistConfigRef, { requiredVotes: newVotes })
+		toast.success('Número de votos necessários atualizado!')
+	}
+
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page)
+	}
+
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value)
+	}
+
+	const filteredMusicas = musicas.filter((musica) =>
+		musica.title.toLowerCase().includes(searchQuery.toLowerCase()),
+	)
+
+	const paginatedMusicas = filteredMusicas.slice(
+		(currentPage - 1) * ITEMS_PER_PAGE,
+		currentPage * ITEMS_PER_PAGE,
+	)
+
+	const totalPages = Math.ceil(filteredMusicas.length / ITEMS_PER_PAGE)
+
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-4 p-4">
 			<LogoComponent />
@@ -157,7 +149,32 @@ export default function PlayListAdmin() {
 							</>
 						)}
 					</Button>
-					<AddMusicComponent />
+
+					<div className="flex flex-col gap-2">
+						<label htmlFor="requiredVotes">
+							Votos necessários para pular a música:
+						</label>
+						<Input
+							id="requiredVotes"
+							type="number"
+							value={requiredVotes}
+							onChange={handleRequiredVotesChange}
+							className="rounded border-gray-300 p-2"
+						/>
+					</div>
+
+					<div className="flex flex-col gap-2">
+						<label htmlFor="searchQuery">Buscar música:</label>
+						<Input
+							id="searchQuery"
+							type="text"
+							value={searchQuery}
+							onChange={handleSearchChange}
+							placeholder="Digite o nome da música..."
+							className="rounded border-gray-300 p-2"
+						/>
+					</div>
+
 					{currentMusic && (
 						<Card>
 							<CardContent className="flex items-center justify-between border-gray-200 border-b p-4">
@@ -173,37 +190,16 @@ export default function PlayListAdmin() {
 										{currentMusic.title}
 									</span>
 								</div>
-								<Button variant="outline" onClick={handleSkipMusic}>
-									<FaForward className="mr-2" /> Pular Música
-								</Button>
 							</CardContent>
 						</Card>
 					)}
-					{musicas.map((musica) => (
+					{paginatedMusicas.map((musica) => (
 						<Card
 							key={musica.id}
 							className="flex items-center justify-between border-gray-200 border-b p-4"
 						>
 							<span>{musica.title}</span>
 							<div className="flex items-center gap-2">
-								<Button
-									variant="outline"
-									onClick={() => handlePlayNow(musica.id)}
-								>
-									<FaPlay />
-								</Button>
-								<Button
-									variant="outline"
-									onClick={() => handlePromoteMusic(musica.id)}
-								>
-									<FaArrowUp />
-								</Button>
-								<Button
-									variant="outline"
-									onClick={() => handleDemoteMusic(musica.id)}
-								>
-									<FaArrowDown />
-								</Button>
 								<Button
 									variant="outline"
 									onClick={() => handleRemoveMusic(musica.id)}
@@ -213,6 +209,35 @@ export default function PlayListAdmin() {
 							</div>
 						</Card>
 					))}
+
+					<Pagination>
+						<PaginationContent>
+							{currentPage > 1 && (
+								<PaginationItem>
+									<PaginationPrevious
+										onClick={() => handlePageChange(currentPage - 1)}
+									/>
+								</PaginationItem>
+							)}
+							{Array.from({ length: totalPages }, (_, index) => (
+								<PaginationItem key={index}>
+									<PaginationLink
+										isActive={index + 1 === currentPage}
+										onClick={() => handlePageChange(index + 1)}
+									>
+										{index + 1}
+									</PaginationLink>
+								</PaginationItem>
+							))}
+							{currentPage < totalPages && (
+								<PaginationItem>
+									<PaginationNext
+										onClick={() => handlePageChange(currentPage + 1)}
+									/>
+								</PaginationItem>
+							)}
+						</PaginationContent>
+					</Pagination>
 				</div>
 			</div>
 		</main>
