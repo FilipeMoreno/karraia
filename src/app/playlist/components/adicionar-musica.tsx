@@ -194,7 +194,7 @@ const AddMusicComponent: React.FC = () => {
 				onChange={handleQueryChange}
 			/>
 			{!error && renderMusicDetails()}
-			{!isUrl && <Button onClick={handleSearch}>Buscar músicas</Button>}
+			{!isUrl && <Button onClick={handleSearch}>Buscar</Button>}
 			{!isLoading && !error && !isUrl && searchResults.length > 0 && (
 				<ScrollArea className="h-72 w-full rounded-md">
 					{renderSearchResults()}
@@ -251,17 +251,23 @@ const AddMusicComponent: React.FC = () => {
 			<DrawerPortal>
 				<DrawerContent
 					ref={drawerContentRef}
-					className="fixed right-0 bottom-0 left-0 flex flex-col rounded-t-lg border border-gray-200 bg-white p-3"
+					className="fixed flex flex-col rounded-t-lg border border-gray-200 bg-white p-3"
 				>
 					<DrawerHeader className="text-left">
-						<DrawerTitle>Adicionar Música!</DrawerTitle>
+						<DrawerTitle>
+							{isUrl
+								? 'Adicionar música pela URL'
+								: 'Adicionar música pelo Nome'}
+						</DrawerTitle>
 						<DrawerDescription>
 							{isUrl
 								? 'Insira o link da música do YouTube abaixo.'
 								: 'Insira o nome da música abaixo.'}
 						</DrawerDescription>
 					</DrawerHeader>
-					<div className="flex flex-col gap-4">{renderFormContent()}</div>
+					<ScrollArea className="overflow-y-auto">
+						<div className="flex flex-col gap-4 p-2">{renderFormContent()}</div>
+					</ScrollArea>
 					<DrawerFooter className="w-full">
 						<DrawerClose asChild onClick={handleCloseModal}>
 							<Button variant="outline" className="w-full">
