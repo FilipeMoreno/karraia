@@ -251,7 +251,7 @@ const AddMusicComponent: React.FC = () => {
 			<DrawerPortal>
 				<DrawerContent
 					ref={drawerContentRef}
-					className="fixed flex flex-col rounded-t-lg border border-gray-200 bg-white p-3"
+					className="fixed flex h-[70%] flex-col rounded-t-lg border border-gray-200 bg-white p-3"
 				>
 					<DrawerHeader className="text-left">
 						<DrawerTitle>
@@ -266,7 +266,7 @@ const AddMusicComponent: React.FC = () => {
 						</DrawerDescription>
 					</DrawerHeader>
 
-					<ScrollArea className="h-[50%] overflow-y-auto">
+					<ScrollArea className="overflow-y-auto">
 						<div className="flex flex-col gap-4 p-2">{renderFormContent()}</div>
 					</ScrollArea>
 					<DrawerFooter className="w-full">
