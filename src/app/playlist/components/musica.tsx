@@ -23,6 +23,7 @@ interface PlaylistMusicaComponentProps {
 	onForcePlay?: (id: string) => void
 	tocada?: boolean
 	rank?: number
+	addedByName: string
 }
 
 const PlaylistMusicaComponent = ({
@@ -35,6 +36,7 @@ const PlaylistMusicaComponent = ({
 	onForcePlay,
 	tocada,
 	rank,
+	addedByName,
 }: PlaylistMusicaComponentProps) => {
 	const [showAdminCommands, setShowAdminCommands] = useState(false)
 
@@ -53,6 +55,12 @@ const PlaylistMusicaComponent = ({
 					/>
 					<div>
 						<h1 className={tocada ? 'text-zinc-400' : ''}>{musica}</h1>
+						<div className="flex w-full flex-col justify-center rounded-lg">
+							<p className="text-xs">
+								Adicionada por:{' '}
+								{`${addedByName.split(' ')[0]} ${addedByName.split(' ').slice(-1)[0]}`}
+							</p>
+						</div>
 					</div>
 				</div>
 				<div className="flex flex-col justify-center gap-2">

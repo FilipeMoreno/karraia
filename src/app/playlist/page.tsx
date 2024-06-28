@@ -15,6 +15,7 @@ import { userAuthContext } from '@/context/AuthContext'
 import { VoteProvider } from '@/context/Votos'
 import { database } from '@/lib/firebaseService'
 import { rankMusicas } from '@/lib/ranking-musica'
+import { Player } from '@lottiefiles/react-lottie-player'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { get, onValue, ref, remove, set, update } from 'firebase/database'
 import Image from 'next/image'
@@ -37,7 +38,7 @@ export default function PlaylistIndex() {
 	const [searchTerm, setSearchTerm] = useState('')
 	const [skipVotes, setSkipVotes] = useState(0)
 	const [userSkipVote, setUserSkipVote] = useState(false)
-	const requiredVotes = 2
+	const [requiredVotes, setRequiredVotes] = useState(10)
 
 	useEffect(() => {
 		const auth = getAuth()
@@ -68,6 +69,7 @@ export default function PlaylistIndex() {
 		const configRef = ref(database, 'playlist_config')
 		onValue(configRef, (snapshot) => {
 			setPlaylistConfig(snapshot.val())
+			setRequiredVotes(snapshot.val().requiredVotes)
 		})
 	}, [])
 
@@ -273,8 +275,9 @@ export default function PlaylistIndex() {
 
 	return (
 		<VoteProvider>
-			<main className="flex min-h-screen w-full flex-col items-center gap-4 p-4">
+			<main className="flex min-h-screen w-full flex-col items-center gap-4 p-4 ">
 				<LogoComponent />
+
 				<div className="flex w-full items-center justify-center md:hidden">
 					<AddMusicComponent />
 				</div>
@@ -289,7 +292,19 @@ export default function PlaylistIndex() {
 							{currentMusic && (
 								<Card className="w-full">
 									<CardHeader>
-										<CardTitle>Tocando agora</CardTitle>
+										<CardTitle className="flex flex-row items-center gap-1">
+											<Player
+												autoplay
+												loop
+												src="/lottie/audio-wave.json"
+												style={{
+													height: '25px',
+													width: '30px',
+													color: 'black',
+												}}
+											/>
+											Tocando agora
+										</CardTitle>
 									</CardHeader>
 									{currentMusic && (
 										<>
@@ -313,8 +328,9 @@ export default function PlaylistIndex() {
 														className="rounded-full"
 													/>
 													<div className="flex flex-col">
-														<p className="text-xs">Adicionado por:</p>
-														<p>{currentMusic.addedByName}</p>
+														<p className="text-xs">Adicionada por:</p>
+
+														<p>{`${currentMusic.addedByName.split(' ')[0]} ${currentMusic.addedByName.split(' ').slice(-1)[0]}`}</p>
 													</div>
 												</div>
 												<div className="flex items-center justify-end gap-4">
@@ -354,8 +370,10 @@ export default function PlaylistIndex() {
 				<div className="flex w-full flex-col gap-4 lg:flex-row">
 					<Card className="w-full lg:w-[45%]">
 						<CardHeader>
-							<CardTitle>Próximas músicas</CardTitle>
-							<CardDescription>Próximas músicas que tocarão</CardDescription>
+							<CardTitle>A seguir</CardTitle>
+							<CardDescription>
+								Músicas na sequência de reprodução
+							</CardDescription>
 						</CardHeader>
 						{rankedUpcomingSongs.length === 0 && (
 							<CardContent>
@@ -376,6 +394,7 @@ export default function PlaylistIndex() {
 										onRemove={() => handleRemoveMusicPlaylist(musica.id)}
 										onReset={() => handleResetMusic(musica.id)}
 										onForcePlay={() => handleForcePlayMusic(musica.id)}
+										addedByName={musica?.addedByName}
 									/>
 								</div>
 							))}
@@ -385,7 +404,7 @@ export default function PlaylistIndex() {
 						<CardHeader className="flex flex-row items-center justify-between">
 							<div>
 								<CardTitle>Playlist</CardTitle>
-								<CardDescription>Músicas na playlist</CardDescription>
+								<CardDescription>Todas as músicas da playlist</CardDescription>
 							</div>
 							<div className="hidden md:flex">
 								<AddMusicComponent />
@@ -403,8 +422,8 @@ export default function PlaylistIndex() {
 						{filteredMusicas.length === 0 && (
 							<CardContent>
 								<p className="text-center text-zinc-500">
-									Não há músicas na playlist. Adicione músicas para começar a
-									tocar.
+									A playlist está vazia no momento. Adicione músicas para
+									começar a tocar!
 								</p>
 							</CardContent>
 						)}
@@ -424,6 +443,7 @@ export default function PlaylistIndex() {
 											tocada={musica?.tocada}
 											onReset={() => handleResetMusic(musica.id)}
 											onForcePlay={() => handleForcePlayMusic(musica.id)}
+											addedByName={musica?.addedByName}
 										/>
 									</div>
 								)
