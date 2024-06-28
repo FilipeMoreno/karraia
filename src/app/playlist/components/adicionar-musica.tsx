@@ -3,6 +3,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -20,19 +21,22 @@ import {
 	DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { userAuthContext } from '@/context/AuthContext'
 import { addMusic } from '@/lib/add-musica'
-import { getYouTubeVideoData } from '@/lib/youtube-api'
+import { getYouTubeVideoData, searchYouTubeVideos } from '@/lib/youtube-api'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 import { useMediaQuery } from 'usehooks-ts'
 
 const AddMusicComponent: React.FC = () => {
-	const [url, setUrl] = useState<string>('')
+	const [query, setQuery] = useState<string>('')
+	const [isUrl, setIsUrl] = useState<boolean>(true)
 	const [error, setError] = useState<string>('')
 	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [searchResults, setSearchResults] = useState<any[]>([])
 	const isDesktop = useMediaQuery('(min-width: 768px)')
 	const [open, setOpen] = useState(false)
 	const { userAuth } = userAuthContext()
@@ -46,10 +50,11 @@ const AddMusicComponent: React.FC = () => {
 	}, [open])
 
 	const resetForm = () => {
-		setUrl('')
+		setQuery('')
 		setError('')
 		setMusicDetails(null)
 		setIsLoading(false)
+		setSearchResults([])
 	}
 
 	const fetchMusicDetails = async (videoUrl: string) => {
@@ -67,19 +72,37 @@ const AddMusicComponent: React.FC = () => {
 		}
 	}
 
-	const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const newUrl = e.target.value
-		setUrl(newUrl)
-		fetchMusicDetails(newUrl)
+	const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setQuery(e.target.value)
+		setMusicDetails(null)
+		setSearchResults([])
 	}
 
-	const handleAddMusic = async () => {
-		try {
-			if (!url) {
-				setError('Por favor, insira um link do YouTube.')
-				return
-			}
+	useEffect(() => {
+		if (isUrl && query) {
+			fetchMusicDetails(query)
+		}
+	}, [query, isUrl])
 
+	const handleSearch = async () => {
+		if (!isUrl) {
+			setIsLoading(true)
+			try {
+				const { error, videos } = await searchYouTubeVideos(query)
+				setSearchResults(videos)
+				setError(error || '')
+			} catch (error) {
+				console.error('Erro ao buscar músicas:', error)
+				setError('Erro ao buscar músicas.')
+				setSearchResults([])
+			} finally {
+				setIsLoading(false)
+			}
+		}
+	}
+
+	const handleAddMusic = async (url: string) => {
+		try {
 			const success = await addMusic(url, userAuth)
 			if (success) {
 				setOpen(false)
@@ -119,18 +142,66 @@ const AddMusicComponent: React.FC = () => {
 						className="rounded-lg"
 					/>
 					<p className="text-center text-sm">{musicDetails.title}</p>
+					<Button className="w-full" onClick={() => handleAddMusic(query)}>
+						Adicionar música
+					</Button>
 				</div>
 			)
 		}
+
 		return null
 	}
 
-	useEffect(() => {
-		if (drawerContentRef.current && !isDesktop) {
-			drawerContentRef.current.style.height = 'auto'
-			drawerContentRef.current.scrollTo(0, 0)
-		}
-	}, [musicDetails, isDesktop])
+	const renderSearchResults = () => {
+		return searchResults.map((video, index) => (
+			<div
+				key={index}
+				className="mb-3 flex flex-col items-center gap-2 rounded-lg bg-zinc-100 p-4"
+			>
+				<Image
+					src={video.thumbnail}
+					alt={video.title}
+					width={200}
+					height={225}
+					className="rounded-lg"
+				/>
+				<p className="text-center text-sm">{video.title}</p>
+				<Button className="w-full" onClick={() => handleAddMusic(video.url)}>
+					Adicionar música
+				</Button>
+			</div>
+		))
+	}
+
+	const toggleSearchType = () => {
+		setIsUrl(!isUrl)
+		setError('')
+		setMusicDetails(null)
+		setSearchResults([])
+		setQuery('')
+	}
+
+	const renderFormContent = () => (
+		<>
+			<Button variant="outline" onClick={toggleSearchType}>
+				{isUrl ? 'Adicionar pelo Nome' : 'Adicionar pela URL'}
+			</Button>
+			{error && <p className="text-red-500">{error}</p>}
+			<Input
+				type="text"
+				placeholder={isUrl ? 'Link do YouTube' : 'Nome da música'}
+				value={query}
+				onChange={handleQueryChange}
+			/>
+			{!error && renderMusicDetails()}
+			{!isUrl && <Button onClick={handleSearch}>Buscar músicas</Button>}
+			{!isLoading && !error && !isUrl && searchResults.length > 0 && (
+				<ScrollArea className="h-72 w-full rounded-md">
+					{renderSearchResults()}
+				</ScrollArea>
+			)}
+		</>
+	)
 
 	if (isDesktop) {
 		return (
@@ -143,22 +214,27 @@ const AddMusicComponent: React.FC = () => {
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
-						<DialogTitle>Adicionar Música</DialogTitle>
+						<DialogTitle>
+							{isUrl
+								? 'Adicionar música pela URL'
+								: 'Adicionar música pelo Nome'}
+						</DialogTitle>
 						<DialogDescription>
-							Insira o link da música do YouTube abaixo.
+							{isUrl
+								? 'Insira o link da música do YouTube abaixo.'
+								: 'Insira o nome da música abaixo.'}
 						</DialogDescription>
 					</DialogHeader>
-					{error && <p className="text-red-500">{error}</p>}
-					{!error && renderMusicDetails()}
-					<Input
-						type="text"
-						placeholder="Link do YouTube"
-						value={url}
-						onChange={handleUrlChange}
-					/>
-					<Button onClick={handleAddMusic}>
-						<FaPlus className="mr-2" /> Adicionar música
-					</Button>
+					{renderFormContent()}
+					<DialogFooter>
+						<Button
+							variant="outline"
+							className="w-full"
+							onClick={handleCloseModal}
+						>
+							Cancelar
+						</Button>
+					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 		)
@@ -178,23 +254,14 @@ const AddMusicComponent: React.FC = () => {
 					className="fixed right-0 bottom-0 left-0 flex h-auto max-h-[97%] flex-col rounded-t-lg border border-gray-200 bg-white p-3"
 				>
 					<DrawerHeader className="text-left">
-						<DrawerTitle>Adicionar Música</DrawerTitle>
+						<DrawerTitle>Adicionar Música!</DrawerTitle>
 						<DrawerDescription>
-							Insira o link da música do YouTube abaixo.
+							{isUrl
+								? 'Insira o link da música do YouTube abaixo.'
+								: 'Insira o nome da música abaixo.'}
 						</DrawerDescription>
 					</DrawerHeader>
-					<div className="flex flex-col gap-4">
-						{error && <p className="text-center text-red-500">{error}</p>}
-
-						<Input
-							type="text"
-							placeholder="Link do YouTube"
-							value={url}
-							onChange={handleUrlChange}
-						/>
-						<Button onClick={handleAddMusic}>Adicionar música</Button>
-						{!error && renderMusicDetails()}
-					</div>
+					<div className="flex flex-col gap-4">{renderFormContent()}</div>
 					<DrawerFooter className="w-full">
 						<DrawerClose asChild onClick={handleCloseModal}>
 							<Button variant="outline" className="w-full">

@@ -57,3 +57,37 @@ export const getYouTubeVideoData = async (videoUrl: string) => {
 		}
 	}
 }
+
+export const searchYouTubeVideos = async (query: string) => {
+	const apiKey = process.env.YOUTUBE_API_KEY
+	const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${apiKey}`
+
+	try {
+		const response = await fetch(url)
+		const data = await response.json()
+
+		if (data.items.length === 0) {
+			return {
+				error: 'Nenhum vídeo encontrado.',
+				videos: [],
+			}
+		}
+
+		const videos = data.items.map((item: any) => ({
+			title: item.snippet.title,
+			thumbnail: item.snippet.thumbnails.default.url,
+			url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+		}))
+
+		return {
+			error: '',
+			videos,
+		}
+	} catch (error) {
+		console.error('Erro ao buscar vídeos do YouTube:', error)
+		return {
+			error: 'Erro ao buscar vídeos do YouTube.',
+			videos: [],
+		}
+	}
+}
