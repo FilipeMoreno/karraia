@@ -28,22 +28,7 @@ const vt323 = VT323({
 	weight: '400',
 })
 
-let description = ''
-
-const daysLeft = new Date('2024-06-29').getTime() - new Date().getTime()
-const days = Math.floor(daysLeft / (1000 * 60 * 60 * 24))
-
-if (days < 0) {
-	description = 'KArraiá - 29 de junho de 2024 | Aconteceu!'
-}
-if (days === 0) {
-	description = 'KArraiá - 29 de junho de 2024 | É HOJE!!!'
-}
-if (days === 1) {
-	description = 'KArraiá - 29 de junho de 2024 | É amanhã!'
-} else {
-	description = `KArraiá - 29 de junho de 2024 | Faltam ${days} dias!`
-}
+const description = 'KArraiá - Muito Obrigada!'
 
 export const metadata: Metadata = {
 	title: 'KArraiá',
